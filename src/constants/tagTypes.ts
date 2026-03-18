@@ -1,0 +1,28 @@
+export const TAG_TYPES = [
+  'Auth',
+  'UserProfile',
+  'Plans',
+  'Subscription',
+  'Payments',
+  'Promotions',
+  'Books',
+  'Authors',
+  'Categories',
+  'Reading',
+  'Bookmarks',
+  'Highlights',
+  'Reviews',
+  'Wishlist',
+  'Borrows',
+  'Reservations',
+  'Dashboard',
+  'Notifications',
+  'Members',
+  'Staff',
+  'Roles',
+  'Reports',
+  'Audit',
+  'Settings',
+] as const
+
+export type TagType = (typeof TAG_TYPES)[number]
