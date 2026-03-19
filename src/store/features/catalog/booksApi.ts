@@ -30,16 +30,6 @@ type Book = {
   categories?: Array<{ id: string; name: string }>
 }
 
-type BookReview = {
-  id: string
-  rating: number
-  title?: string
-  content?: string
-  user?: { id: string; name: string }
-  createdAt: string
-  updatedAt: string
-}
-
 export const booksApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getBooks: builder.query<
@@ -74,17 +64,6 @@ export const booksApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Books'],
     }),
-    getBookReviews: builder.query<
-      ApiResponse<Array<BookReview>>,
-      { bookId: string; page?: number; limit?: number; sortBy?: string }
-    >({
-      query: ({ bookId, ...params }) => ({
-        url: `/books/${bookId}/reviews`,
-        method: 'GET',
-        params,
-      }),
-      providesTags: ['Reviews'],
-    }),
   }),
   overrideExisting: false,
 })
@@ -94,5 +73,4 @@ export const {
   useGetFeaturedBooksQuery,
   useGetBookByIdQuery,
   useGetBookPreviewQuery,
-  useGetBookReviewsQuery,
 } = booksApi
