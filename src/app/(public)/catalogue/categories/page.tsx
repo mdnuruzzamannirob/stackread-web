@@ -1,12 +1,13 @@
+import { CategoriesContent } from '@/components/features/catalog/pages/CategoriesContent'
+import type { Metadata } from 'next'
+
+export const generateMetadata = async (): Promise<Metadata> => {
+  return {
+    title: 'Stackread Categories',
+    description: 'Browse book categories and explore what to read next.',
+  }
+}
+
 export default function CatalogueCategoriesPage() {
-  return (
-    <section className="space-y-2">
-      <h1 className="text-2xl font-semibold">
-        Catalogue Categories Placeholder
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        Route: /catalogue/categories
-      </p>
-    </section>
-  )
+  return <CategoriesContent />
 }

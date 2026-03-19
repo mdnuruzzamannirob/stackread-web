@@ -33,7 +33,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
-  if (userAuthenticated && pathname.startsWith('/auth/')) {
+  if (
+    userAuthenticated &&
+    pathname.startsWith('/auth/') &&
+    pathname !== '/auth/callback' &&
+    pathname !== '/auth/check-email'
+  ) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -61,6 +66,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/forgot-password', request.url))
   }
 
+  if (pathname === '/check-email') {
+    return NextResponse.redirect(new URL('/auth/check-email', request.url))
+  }
+
   if (pathname === '/reset-password') {
     return NextResponse.redirect(new URL('/auth/reset-password', request.url))
   }
@@ -83,6 +92,7 @@ export const config = {
     '/register',
     '/verify-email',
     '/forgot-password',
+    '/check-email',
     '/reset-password',
     '/callback',
   ],

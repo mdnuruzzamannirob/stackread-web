@@ -23,6 +23,19 @@ const rawBaseQuery = fetchBaseQuery({
 
 let refreshInFlight: Promise<boolean> | null = null
 
+function getRequestUrl(args: string | FetchArgs): string {
+  if (typeof args === 'string') {
+    return args
+  }
+
+  return args.url
+}
+
+function isStaffRequest(args: string | FetchArgs): boolean {
+  const url = getRequestUrl(args)
+  return url.startsWith('/staff') || url.startsWith('/admin')
+}
+
 function resolveRedirectPath(pathname: string) {
   return pathname.startsWith('/admin') ? '/admin/login' : '/auth/login'
 }
@@ -39,6 +52,7 @@ function buildRedirectUrl(pathname: string) {
 }
 
 async function attemptRefresh(
+  args: string | FetchArgs,
   api: Parameters<
     BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>
   >[1],
@@ -46,10 +60,19 @@ async function attemptRefresh(
     BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>
   >[2],
 ): Promise<boolean> {
+  const shouldAttemptRefresh =
+    typeof window !== 'undefined' &&
+    process.env.NEXT_PUBLIC_ENABLE_REFRESH === 'true'
+
+  if (!shouldAttemptRefresh) {
+    return false
+  }
+
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
-      const staffToken = getAccessToken('staff')
-      const refreshRoute = staffToken ? '/staff/refresh' : '/auth/refresh'
+      const refreshRoute = isStaffRequest(args)
+        ? '/staff/refresh'
+        : '/auth/refresh'
       const refreshResult = await rawBaseQuery(
         {
           url: refreshRoute,
@@ -80,18 +103,23 @@ export const baseQueryWithReauth: BaseQueryFn<
   let result = await rawBaseQuery(args, api, extraOptions)
 
   if (result.error?.status === 401) {
-    const refreshed = await attemptRefresh(api, extraOptions)
+    const refreshed = await attemptRefresh(args, api, extraOptions)
 
     if (refreshed) {
       result = await rawBaseQuery(args, api, extraOptions)
     }
 
     if (result.error?.status === 401) {
+      const requestIsStaff =
+        isStaffRequest(args) || Boolean(getAccessToken('staff'))
       clearAllAccessTokens()
 
       if (typeof window !== 'undefined') {
         const pathname = window.location.pathname
-        window.location.assign(buildRedirectUrl(pathname))
+        const redirectTarget = requestIsStaff
+          ? `/admin/login?redirect=${encodeURIComponent(pathname)}`
+          : buildRedirectUrl(pathname)
+        window.location.assign(redirectTarget)
       }
     }
   }

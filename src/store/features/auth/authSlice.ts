@@ -1,3 +1,4 @@
+import type { RootState } from '@/store'
 import type { IStaff, IUser } from '@/types'
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
@@ -74,3 +75,12 @@ export const {
 } = authSlice.actions
 
 export const authReducer = authSlice.reducer
+
+export const selectAuthState = (state: RootState) => state.auth
+export const selectActorType = (state: RootState) => state.auth.actorType
+export const selectAccessToken = (state: RootState) => state.auth.accessToken
+export const selectCurrentActor = (state: RootState) => state.auth.currentActor
+export const selectPendingTwoFactorToken = (state: RootState) =>
+  state.auth.pendingTwoFactorToken
+export const selectHydrationStatus = (state: RootState) =>
+  state.auth.hydrationStatus

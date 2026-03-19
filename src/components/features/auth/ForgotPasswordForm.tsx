@@ -1,25 +1,36 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { forgotPasswordSchema } from '@/lib/forms/authSchemas'
 import { formatApiErrorMessage } from '@/lib/utils/apiHelpers'
 import { useForgotPasswordMutation } from '@/store/features/auth/authApi'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export function ForgotPasswordForm() {
+  const router = useRouter()
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation()
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setStatus(null)
+    setFieldError(null)
     setError(null)
 
+    const parsed = forgotPasswordSchema.safeParse({ email })
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors
+      setFieldError(flattened.email?.[0] ?? 'Enter a valid email address.')
+      return
+    }
+
     try {
-      const response = await forgotPassword({ email }).unwrap()
-      setStatus(
-        response.message ?? 'Reset instructions sent if account exists.',
+      await forgotPassword({ email: parsed.data.email }).unwrap()
+      router.replace(
+        `/auth/check-email?email=${encodeURIComponent(parsed.data.email)}`,
       )
     } catch (submitError) {
       setError(formatApiErrorMessage(submitError))
@@ -41,20 +52,21 @@ export function ForgotPasswordForm() {
       <label className="block space-y-1 text-sm">
         <span>Email</span>
         <input
-          required
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           className="h-10 w-full rounded-md border border-input bg-background px-3"
           placeholder="you@example.com"
         />
+        {fieldError ? (
+          <p className="text-xs text-destructive">{fieldError}</p>
+        ) : null}
       </label>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Submitting...' : 'Send reset instructions'}
       </Button>
 
-      {status ? <p className="text-sm text-primary">{status}</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>
   )

@@ -1,8 +1,26 @@
+import { SearchContent } from '@/components/features/catalog/pages/SearchContent'
+import type { Metadata } from 'next'
+
+type SearchPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+export const generateMetadata = async ({
+  searchParams,
+}: SearchPageProps): Promise<Metadata> => {
+  const resolved = await searchParams
+  const query = typeof resolved.q === 'string' ? resolved.q : ''
+
+  return {
+    title: query
+      ? `Search: ${query} | Stackread`
+      : 'Search catalogue | Stackread',
+    description: query
+      ? `Search results for ${query} in Stackread.`
+      : 'Search books, authors, and categories in Stackread.',
+  }
+}
+
 export default function SearchPage() {
-  return (
-    <section className="space-y-2">
-      <h1 className="text-2xl font-semibold">Search Placeholder</h1>
-      <p className="text-sm text-muted-foreground">Route: /search</p>
-    </section>
-  )
+  return <SearchContent />
 }

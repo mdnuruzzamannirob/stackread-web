@@ -26,7 +26,7 @@ export function AuthCallbackHandler() {
   const [error, setError] = useState<string | null>(null)
 
   const callbackToken = useMemo(
-    () => searchParams.get('accessToken'),
+    () => searchParams.get('accessToken') ?? searchParams.get('token'),
     [searchParams],
   )
   const actorType = useMemo(

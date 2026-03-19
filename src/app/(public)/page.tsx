@@ -1,8 +1,14 @@
+import { PublicHomeContent } from '@/components/features/catalog/pages/PublicHomeContent'
+import type { Metadata } from 'next'
+
+export const generateMetadata = async (): Promise<Metadata> => {
+  return {
+    title: 'Stackread | Read Smarter, Borrow Faster',
+    description:
+      'Discover books, compare plans, and start reading with Stackread.',
+  }
+}
+
 export default function HomePage() {
-  return (
-    <section className="space-y-2">
-      <h1 className="text-2xl font-semibold">Home Placeholder</h1>
-      <p className="text-sm text-muted-foreground">Route: /</p>
-    </section>
-  )
+  return <PublicHomeContent />
 }

@@ -3,6 +3,7 @@
 import { OAuthButtons } from '@/components/features/auth/OAuthButtons'
 import { Button } from '@/components/ui/button'
 import { applyUserSession } from '@/lib/auth/session'
+import { loginSchema, type LoginSchema } from '@/lib/forms/authSchemas'
 import { formatApiErrorMessage } from '@/lib/utils/apiHelpers'
 import { useLoginMutation } from '@/store/features/auth/authApi'
 import { useLazyGetOnboardingStatusQuery } from '@/store/features/onboarding/onboardingApi'
@@ -23,15 +24,30 @@ export function LoginForm() {
     [searchParams],
   )
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<LoginSchema>({
     email: '',
     password: '',
   })
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof LoginSchema, string>>
+  >({})
   const [error, setError] = useState<string | null>(null)
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
+    setFieldErrors({})
+
+    const parsed = loginSchema.safeParse(form)
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors
+      setFieldErrors({
+        email: flattened.email?.[0],
+        password: flattened.password?.[0],
+      })
+      return
+    }
 
     try {
       const response = await login(form).unwrap()
@@ -83,7 +99,6 @@ export function LoginForm() {
       <label className="block space-y-1 text-sm">
         <span>Email</span>
         <input
-          required
           type="email"
           value={form.email}
           onChange={(event) =>
@@ -92,13 +107,14 @@ export function LoginForm() {
           className="h-10 w-full rounded-md border border-input bg-background px-3"
           placeholder="you@example.com"
         />
+        {fieldErrors.email ? (
+          <p className="text-xs text-destructive">{fieldErrors.email}</p>
+        ) : null}
       </label>
 
       <label className="block space-y-1 text-sm">
         <span>Password</span>
         <input
-          required
-          minLength={8}
           type="password"
           value={form.password}
           onChange={(event) =>
@@ -107,6 +123,9 @@ export function LoginForm() {
           className="h-10 w-full rounded-md border border-input bg-background px-3"
           placeholder="••••••••"
         />
+        {fieldErrors.password ? (
+          <p className="text-xs text-destructive">{fieldErrors.password}</p>
+        ) : null}
       </label>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

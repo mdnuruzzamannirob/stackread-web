@@ -5,6 +5,10 @@ import {
   applyPendingTwoFactorSession,
   applyStaffSession,
 } from '@/lib/auth/session'
+import {
+  staffLoginSchema,
+  type StaffLoginSchema,
+} from '@/lib/forms/authSchemas'
 import { formatApiErrorMessage } from '@/lib/utils/apiHelpers'
 import {
   useLazyGetStaffMeQuery,
@@ -26,18 +30,33 @@ export function StaffLoginForm() {
     [searchParams],
   )
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<StaffLoginSchema>({
     email: '',
     password: '',
   })
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof StaffLoginSchema, string>>
+  >({})
   const [error, setError] = useState<string | null>(null)
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setFieldErrors({})
     setError(null)
 
+    const parsed = staffLoginSchema.safeParse(form)
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors
+      setFieldErrors({
+        email: flattened.email?.[0],
+        password: flattened.password?.[0],
+      })
+      return
+    }
+
     try {
-      const response = await staffLogin(form).unwrap()
+      const response = await staffLogin(parsed.data).unwrap()
       const result = response.data
 
       if (result.requiresTwoFactor) {
@@ -73,7 +92,6 @@ export function StaffLoginForm() {
       <label className="block space-y-1 text-sm">
         <span>Email</span>
         <input
-          required
           type="email"
           value={form.email}
           onChange={(event) =>
@@ -82,13 +100,14 @@ export function StaffLoginForm() {
           className="h-10 w-full rounded-md border border-input bg-background px-3"
           placeholder="staff@example.com"
         />
+        {fieldErrors.email ? (
+          <p className="text-xs text-destructive">{fieldErrors.email}</p>
+        ) : null}
       </label>
 
       <label className="block space-y-1 text-sm">
         <span>Password</span>
         <input
-          required
-          minLength={8}
           type="password"
           value={form.password}
           onChange={(event) =>
@@ -97,6 +116,9 @@ export function StaffLoginForm() {
           className="h-10 w-full rounded-md border border-input bg-background px-3"
           placeholder="••••••••"
         />
+        {fieldErrors.password ? (
+          <p className="text-xs text-destructive">{fieldErrors.password}</p>
+        ) : null}
       </label>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

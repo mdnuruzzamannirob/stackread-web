@@ -12,6 +12,7 @@ export const ROUTES = {
   SEARCH: '/search',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  CHECK_EMAIL: '/auth/check-email',
   VERIFY_EMAIL: '/auth/verify-email',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',

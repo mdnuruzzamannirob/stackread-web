@@ -1,6 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  resendVerificationSchema,
+  verifyEmailSchema,
+} from '@/lib/forms/authSchemas'
 import { formatApiErrorMessage } from '@/lib/utils/apiHelpers'
 import {
   useResendVerificationMutation,
@@ -26,16 +30,29 @@ export function EmailVerifyPanel() {
 
   const [token, setToken] = useState(initialToken)
   const [email, setEmail] = useState(initialEmail)
+  const [fieldErrors, setFieldErrors] = useState<{
+    token?: string
+    email?: string
+  }>({})
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const submitVerify = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setFieldErrors((current) => ({ ...current, token: undefined }))
     setStatus(null)
     setError(null)
 
+    const parsed = verifyEmailSchema.safeParse({ token })
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors
+      setFieldErrors((current) => ({ ...current, token: flattened.token?.[0] }))
+      return
+    }
+
     try {
-      const response = await verifyEmail({ token }).unwrap()
+      const response = await verifyEmail({ token: parsed.data.token }).unwrap()
       setStatus(response.message ?? 'Email verified successfully.')
     } catch (submitError) {
       setError(formatApiErrorMessage(submitError))
@@ -44,11 +61,22 @@ export function EmailVerifyPanel() {
 
   const submitResend = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setFieldErrors((current) => ({ ...current, email: undefined }))
     setStatus(null)
     setError(null)
 
+    const parsed = resendVerificationSchema.safeParse({ email })
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors
+      setFieldErrors((current) => ({ ...current, email: flattened.email?.[0] }))
+      return
+    }
+
     try {
-      const response = await resendVerification({ email }).unwrap()
+      const response = await resendVerification({
+        email: parsed.data.email,
+      }).unwrap()
       setStatus(response.message ?? 'Verification email sent.')
     } catch (submitError) {
       setError(formatApiErrorMessage(submitError))
@@ -69,12 +97,14 @@ export function EmailVerifyPanel() {
           <span>Verification token</span>
           <input
             required
-            minLength={10}
             value={token}
             onChange={(event) => setToken(event.target.value)}
             className="h-10 w-full rounded-md border border-input bg-background px-3"
             placeholder="Paste token"
           />
+          {fieldErrors.token ? (
+            <p className="text-xs text-destructive">{fieldErrors.token}</p>
+          ) : null}
         </label>
         <Button type="submit" className="w-full" disabled={isVerifying}>
           {isVerifying ? 'Verifying...' : 'Verify'}
@@ -95,6 +125,9 @@ export function EmailVerifyPanel() {
             className="h-10 w-full rounded-md border border-input bg-background px-3"
             placeholder="you@example.com"
           />
+          {fieldErrors.email ? (
+            <p className="text-xs text-destructive">{fieldErrors.email}</p>
+          ) : null}
         </label>
         <Button
           type="submit"
