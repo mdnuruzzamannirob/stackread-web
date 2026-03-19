@@ -1,6 +1,0 @@
-onlyBuiltDependencies:
-  - '@firebase/util'
-  - msw
-  - protobufjs
-  - sharp
-  - unrs-resolver
