@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
+import {
+  fetchOnboardingStatus,
+  resolvePostAuthDestination,
+} from '@/lib/auth/onboarding'
 import { getStoredAccessToken } from '@/lib/auth/token-storage'
 import { clearAuthState } from '@/store/features/auth/authSlice'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
@@ -31,7 +35,26 @@ export function useRedirectAuthenticated(locale: string) {
       return
     }
 
-    router.replace(`/${locale}/dashboard`)
+    let isMounted = true
+
+    void (async () => {
+      const onboardingStatus = await fetchOnboardingStatus(token)
+
+      if (!isMounted) {
+        return
+      }
+
+      router.replace(
+        resolvePostAuthDestination({
+          locale,
+          onboardingStatus,
+        }),
+      )
+    })()
+
+    return () => {
+      isMounted = false
+    }
   }, [dispatch, isHydrated, locale, router, token])
 }
 

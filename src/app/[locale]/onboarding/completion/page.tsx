@@ -7,8 +7,7 @@ import { toast } from 'sonner'
 import { AuthCard } from '@/components/layout/auth-card'
 import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { getStoredAccessToken } from '@/lib/auth/token-storage'
-import { env } from '@/lib/env'
+import { useCompleteOnboardingMutation } from '@/store/features/onboarding/onboardingApi'
 
 export default function OnboardingCompletionPage() {
   const params = useParams<{ locale: string }>()
@@ -17,30 +16,13 @@ export default function OnboardingCompletionPage() {
   const searchParams = useSearchParams()
   const paymentRequired = searchParams.get('paymentRequired') === '1'
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [completeOnboardingMutation] = useCompleteOnboardingMutation()
 
-  const completeOnboarding = async () => {
-    const token = getStoredAccessToken()
-
-    if (!token) {
-      router.replace(`/${locale}/auth/login`)
-      return
-    }
-
+  const handleCompleteOnboarding = async () => {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`${env.apiBaseUrl}/onboarding/complete`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ agreeToTerms: true }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to complete onboarding')
-      }
+      await completeOnboardingMutation({ agreeToTerms: true }).unwrap()
 
       toast.success('Onboarding completed')
       router.replace(`/${locale}/dashboard`)
@@ -68,7 +50,7 @@ export default function OnboardingCompletionPage() {
         <Button
           type="button"
           className="w-full"
-          onClick={() => void completeOnboarding()}
+          onClick={() => void handleCompleteOnboarding()}
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Completing...' : 'Complete onboarding'}

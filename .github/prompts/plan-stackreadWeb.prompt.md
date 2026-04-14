@@ -1,696 +1,89 @@
-# Plan: Stackread Web (User App)
-
-## Mission
-
-Build stackread.com as a production-grade Next.js 16 App Router application for regular users only, strictly aligned with implemented backend routes in stackread-backend. No mock/fake placeholder data.
-
-## Core Stack
-
-- Next.js 16 App Router + TypeScript strict
-- Tailwind CSS v4 with @theme and oklch variables in globals.css (no tailwind.config.ts)
-- shadcn/ui, Framer Motion, Sonner, Lucide React
-- Redux Toolkit + RTK Query (feature-based)
-- React Hook Form + Zod
-- next-intl (en, bn)
-- next-themes (light/dark)
-- react-pdf + epub.js unified reader
-- @stripe/stripe-js (Stripe Elements)
-- Vitest + Testing Library
-- Deploy on Vercel
-
-## Design System
-
-- Font family: Geist for headings and body
-- Primary palette: Blue/Indigo, all color tokens in oklch
-- Visual style: minimal and clean, generous whitespace, rounded-lg radius
-- Responsive behavior: desktop top nav, dashboard left sidebar + top bar, mobile bottom navigation
-- Motion: purposeful load transitions, section reveal stagger, reader tool panel transitions
-
-## Auth Architecture (Next.js 16)
-
-- proxy.ts: redirect-only and locale-safe rewriting only, no auth validation
-- Layout server boundary for protected areas verifies session and redirects unauthenticated users
-- Access token session is JWT bearer-based; keep auth state and request helpers aligned with Authorization header usage
-- No middleware-based authorization logic
-- User 2FA is optional and user-controlled in Security Settings
-
-## User Auth Flows
-
-### Email login
-
-- POST /auth/login
-- If requiresTwoFactor = false: persist the authenticated token/session state and redirect to /dashboard
-- If requiresTwoFactor = true: keep tempToken in memory only and redirect to /auth/2fa/challenge
-
-### 2FA challenge
-
-- POST /auth/2fa/challenge with tempToken + otp
-- On success: persist the authenticated token/session state, clear tempToken from memory
-
-### OAuth
-
-- GET /auth/google then provider callback
-- GET /auth/facebook then provider callback
-- Handle callback route in app, then normalize the authenticated token/session state and route to onboarding or dashboard
-
-## Backend Truth Constraints
-
-- User app integrates only regular-user backend routes; keep staff/admin modules out of scope except for the public maintenance page.
-- Treat backend path prefix `/api/v1` as canonical and build frontend API helpers around that base.
-- Use country from GET /auth/me for payment gateway UX selection
-- Use GET /payments/gateways/my to determine which gateways are actually available and how they should be ordered in checkout UI
-- Use POST /auth/refresh for session renewal handling
-- Keep POST /auth/logout callable even without a user bearer token (documented as public), but always clear local session state.
-- Treat GET /search/popular-terms and PATCH /notifications/mark-read as canonical backend endpoints
-- Use GET /books/:id/preview for lightweight preview states when the user has not entered the full detail or reader flow
-- Keep onboarding aligned with docs: GET /onboarding/plans is public, POST /onboarding/select and POST /onboarding/complete require user auth.
-- Do not hardcode country-specific gateways such as bKash or Nagad unless they are returned by the backend gateway list.
-- Gracefully handle no Firebase device-token endpoint
-- SMS flows disabled in frontend UX despite legacy documentation references
-
-## Documentation Ground Truth (Source of Truth)
-
-- Source files: stackread-backend/docs/openAPI.json, stackread-backend/docs/postman-collection.json, stackread-backend/README.md
-- OpenAPI title/version: LMS Backend API v1.0.0
-- OpenAPI coverage: 150 paths, 184 operations
-- Postman coverage: 184 requests (GET 74, POST 60, PATCH 28, DELETE 14, PUT 8)
-- Security schemes in OpenAPI operations: bearerUserAuth (53), bearerStaffAuth (68), public (63)
-- Active backend modules mounted in src/app/routes.ts: 24
-
-## Complete Page Inventory
-
-Each page includes route, purpose, access, rendering strategy, backend endpoints, and key UI blocks.
-
-### Public Pages
-
-1. Route: /[locale]
-
-- Description: Landing with hero, featured books, active flash sale, plans preview, how-it-works, CTA
-- Access: Public
-- Render: Server page with client islands for carousels and animated sections
-- APIs: GET /books/featured, GET /flash-sales/active, GET /plans
-- Key components: HeroSection, FeaturedBooksCarousel, FlashSaleBanner, PlanPreviewGrid, CTASections
-
-2. Route: /[locale]/pricing
-
-- Description: Plan cards, monthly-yearly toggle, coupon pre-check input
-- Access: Public
-- Render: Server page + client billing toggle and coupon form
-- APIs: GET /plans, POST /coupons/validate
-- Key components: PricingTable, BillingCycleToggle, CouponValidateForm, PlanComparison
-
-3. Route: /[locale]/catalogue
-
-- Description: Book grid with filters and pagination/load more
-- Access: Public
-- Render: Server initial query + client infinite query controls
-- APIs: GET /books, GET /categories, GET /authors
-- Key components: CatalogueFilters, BookGrid, LoadMoreButton, ActiveFilterChips
-
-4. Route: /[locale]/books/[id]
-
-- Description: Book metadata, reviews, CTA for read/review/wishlist
-- Access: Public
-- Render: Server page + client review/wishlist actions when authenticated
-- APIs: GET /books/:id, GET /books/:id/preview, GET /books/:bookId/reviews, POST /books/:bookId/reviews, POST /wishlist/:bookId
-- Key components: BookHeader, BookMetaPanel, ReviewList, ActionCTAGroup
-
-5. Route: /[locale]/authors
-
-- Description: Author grid with search and pagination
-- Access: Public
-- Render: Server page + client filter interactions
-- APIs: GET /authors
-- Key components: AuthorGrid, AuthorSearchInput, PaginationControls
-
-6. Route: /[locale]/authors/[id]
-
-- Description: Author profile and authored books listing
-- Access: Public
-- Render: Server page
-- APIs: GET /authors/:id, GET /books
-- Key components: AuthorProfileCard, AuthorBooksGrid
-
-7. Route: /[locale]/categories
-
-- Description: Category list/tree with counts
-- Access: Public
-- Render: Server page
-- APIs: GET /categories
-- Key components: CategoryTree, CategoryStatPill
-
-8. Route: /[locale]/categories/[id]
-
-- Description: Category detail and filtered books
-- Access: Public
-- Render: Server page + client filters
-- APIs: GET /categories/:id, GET /books
-- Key components: CategoryHeader, FilteredBookGrid
-
-9. Route: /[locale]/search
-
-- Description: Search results, filters, suggestions
-- Access: Public
-- Render: Client-heavy for interactive query states
-- APIs: GET /search, GET /search/history, GET /search/suggestions, GET /search/popular-terms, POST /search/log-click
-- Key components: SearchBar, SuggestionPanel, ResultGrid, SearchFilterSidebar
-
-10. Route: /[locale]/about
-
-- Description: Static about content
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: RichContentSection
-
-11. Route: /[locale]/blog
-
-- Description: Static blog index
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: BlogCardList
-
-12. Route: /[locale]/blog/[slug]
-
-- Description: Static blog detail
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: BlogArticle
-
-13. Route: /[locale]/faq
-
-- Description: FAQ accordion
-- Access: Public
-- Render: Server with client accordion
-- APIs: none
-- Key components: FAQAccordion
-
-14. Route: /[locale]/contact
-
-- Description: Contact form
-- Access: Public
-- Render: Client form
-- APIs: none (local validation + mailto or external integration later)
-- Key components: ContactForm
-
-15. Route: /[locale]/terms
-
-- Description: Terms of Service
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: PolicyDocument
-
-16. Route: /[locale]/privacy
-
-- Description: Privacy Policy
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: PolicyDocument
-
-17. Route: /[locale]/cookies
-
-- Description: Cookie Policy
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: PolicyDocument
-
-18. Route: /[locale]/refund
-
-- Description: Refund Policy
-- Access: Public
-- Render: Server
-- APIs: none
-- Key components: PolicyDocument
-
-19. Route: /[locale]/maintenance
-
-- Description: Maintenance fallback page
-- Access: Public
-- Render: Server
-- APIs: GET /admin/settings/maintenance
-- Key components: MaintenanceStateView
-
-### Auth Pages
-
-20. Route: /[locale]/auth/login
-
-- Access: Public
-- Render: Client form
-- APIs: POST /auth/login, GET /auth/google, GET /auth/facebook
-- Components: LoginForm, OAuthButtons
-
-21. Route: /[locale]/auth/register
-
-- Access: Public
-- Render: Client form
-- APIs: POST /auth/register
-- Components: RegisterForm, CountrySelect
-
-22. Route: /[locale]/auth/verify-email
-
-- Access: Public
-- Render: Client auto-submit token
-- APIs: POST /auth/verify-email
-- Components: TokenVerifier, VerifyStateCard
-
-23. Route: /[locale]/auth/check-email
-
-- Access: Public
-- Render: Client countdown
-- APIs: POST /auth/resend-verification
-- Components: ResendCountdownCard
-
-24. Route: /[locale]/auth/forgot-password
-
-- Access: Public
-- Render: Client form
-- APIs: POST /auth/forgot-password
-- Components: ForgotPasswordForm
-
-25. Route: /[locale]/auth/reset-password
-
-- Access: Public
-- Render: Client token form
-- APIs: POST /auth/forgot-password, POST /auth/resend-reset-otp, POST /auth/verify-reset-otp, POST /auth/reset-password
-- Components: ResetPasswordForm
-
-26. Route: /[locale]/auth/oauth-callback
-
-- Access: Public
-- Render: Client callback parser
-- APIs: GET /auth/google/callback, GET /auth/facebook/callback
-- Components: OAuthCallbackHandler
-
-27. Route: /[locale]/auth/2fa/challenge
-
-- Access: Temp-auth only
-- Render: Client OTP form
-- APIs: POST /auth/2fa/challenge, POST /auth/2fa/email/send
-- Components: TwoFactorChallengeForm
-
-### Auth API Endpoints (Non-Page, for User Account)
-
-- GET /auth/me/login-history (user's login history)
-- POST /auth/logout
-- POST /auth/refresh (session renewal)
-
-### User Dashboard Pages
-
-28. Route: /[locale]/dashboard
-
-- Access: User
-- Render: Server shell + client widgets
-- APIs: GET /dashboard, GET /dashboard/stats, GET /dashboard/recommendations, GET /notifications/unread-count
-- Components: DashboardKPIs, ResumeReadingStrip, RecommendationGrid, CmdKSearch
-
-29. Route: /[locale]/dashboard/library
-
-- Access: User
-- Render: Server + client tab switch
-- APIs: GET /dashboard/library, GET /wishlist, GET /reading/currently-reading, GET /reading/completed
-- Components: LibraryTabs, CurrentlyReadingList, CompletedList, WishlistGrid
-
-30. Route: /[locale]/dashboard/reading-history
-
-- Access: User
-- Render: Server + client pagination
-- APIs: GET /reading/history
-- Components: ReadingHistoryTable
-
-31. Route: /[locale]/dashboard/currently-reading
-
-- Access: User
-- Render: Server
-- APIs: GET /reading/currently-reading
-- Components: CurrentlyReadingCards
-
-32. Route: /[locale]/dashboard/completed
-
-- Access: User
-- Render: Server
-- APIs: GET /reading/completed
-- Components: CompletedBooksGrid
-
-33. Route: /[locale]/reader/[bookId]
-
-- Access: User
-- Render: Client-heavy unified reader
-- APIs: POST /reading/:bookId/start, PATCH /reading/:bookId/progress, POST /reading/:bookId/session, GET /books/:bookId/bookmarks, POST /books/:bookId/bookmarks, PATCH /books/:bookId/bookmarks/:id, DELETE /books/:bookId/bookmarks/:id, GET /books/:bookId/highlights, POST /books/:bookId/highlights, PATCH /books/:bookId/highlights/:id, DELETE /books/:bookId/highlights/:id
-- Components: UnifiedReader, PdfReaderPane, EpubReaderPane, ReaderToolbar, BookmarkPopover, HighlightContextMenu
-
-34. Route: /[locale]/dashboard/bookmarks
-
-- Access: User
-- Render: Client list manager
-- APIs: GET /books/:bookId/bookmarks, PATCH /books/:bookId/bookmarks/:id, DELETE /books/:bookId/bookmarks/:id
-- Components: BookmarkManagerTable
-
-35. Route: /[locale]/dashboard/highlights
-
-- Access: User
-- Render: Client list manager
-- APIs: GET /books/:bookId/highlights, PATCH /books/:bookId/highlights/:id, DELETE /books/:bookId/highlights/:id
-- Components: HighlightManagerTable
-
-36. Route: /[locale]/dashboard/wishlist
-
-- Access: User
-- Render: Server + client actions
-- APIs: GET /wishlist, DELETE /wishlist/:bookId
-- Components: WishlistGrid, QuickActions
-
-37. Route: /[locale]/dashboard/notifications
-
-- Access: User
-- Render: Client interactions
-- APIs: GET /notifications, GET /notifications/unread-count, PATCH /notifications/:id/read, PATCH /notifications/mark-read
-- Components: NotificationCenterList
-
-38. Route: /[locale]/dashboard/subscription
-
-- Access: User
-- Render: Server
-- APIs: GET /subscriptions/my, GET /subscriptions/my/history, PATCH /subscriptions/my/cancel, PATCH /subscriptions/my/downgrade, PATCH /subscriptions/my/renew, PATCH /subscriptions/my/upgrade, GET /plans
-- Components: CurrentPlanCard, UsagePanel, SubscriptionTimeline, SubscriptionActions
-
-39. Route: /[locale]/dashboard/subscription/history
-
-- Access: User
-- Render: Server
-- APIs: GET /subscriptions/my/history
-- Components: SubscriptionHistoryTable
-
-40. Route: /[locale]/dashboard/checkout
-
-- Access: User
-- Render: Client checkout orchestration
-- APIs: GET /auth/me, GET /payments/gateways/my, GET /plans, POST /coupons/validate, POST /payments/initiate, POST /payments/verify
-- Components: CheckoutSummary, GatewaySelectorByCountry, StripeElementsForm, RedirectGatewayActions
-
-41. Route: /[locale]/dashboard/payment/result
-
-- Access: User
-- Render: Client callback status page
-- APIs: POST /payments/verify, GET /payments/my/:id
-- Components: PaymentResultState
-
-42. Route: /[locale]/dashboard/payments
-
-- Access: User
-- Render: Server
-- APIs: GET /payments/my, GET /payments/my/:id
-- Components: PaymentHistoryTable, InvoiceDrawer
-
-43. Route: /[locale]/dashboard/settings/profile
-
-- Access: User
-- Render: Client form
-- APIs: GET /auth/me, PATCH /auth/me
-- Components: ProfileSettingsForm
-
-44. Route: /[locale]/dashboard/settings/security
-
-- Access: User
-- Render: Client form
-- APIs: PATCH /auth/me/password, POST /auth/2fa/enable, POST /auth/2fa/verify, POST /auth/2fa/disable, GET /auth/2fa/backup-codes
-- Components: PasswordChangeForm, TwoFactorToggleCard, BackupCodeInfo
-
-45. Route: /[locale]/dashboard/settings/notifications
-
-- Access: User
-- Render: Client form
-- APIs: PATCH /auth/me/notification-prefs
-- Components: NotificationPreferenceForm
-
-46. Route: /[locale]/onboarding/plan-selection
-
-- Access: User
-- Render: Client wizard step
-- APIs: GET /onboarding/plans, POST /onboarding/select
-- Components: OnboardingPlanSelector
-
-47. Route: /[locale]/onboarding/completion
-
-- Access: User
-- Render: Client completion state
-- APIs: POST /onboarding/complete, GET /onboarding/status
-- Components: OnboardingDoneCard
-
-### Special Pages
-
-48. Route: /[locale]/not-found
-
-- Access: Public
-- Render: Server
-- APIs: none
-- Components: NotFoundState
-
-49. Route: /[locale]/error
-
-- Access: Public
-- Render: Client error boundary UI
-- APIs: none
-- Components: ErrorStatePanel
-
-50. Route: /[locale]/offline
-
-- Access: Public
-- Render: Client
-- APIs: none
-- Components: OfflineStatePanel
-
-51. Module-level loading skeletons
-
-- Access: Contextual
-- Render: Server/client loading files
-- APIs: none
-- Components: Skeleton variants per module
-
-52. Module-level empty states
-
-- Access: Contextual
-- Render: Shared UI
-- APIs: none
-- Components: EmptyState variants
-
-## Component Architecture
-
-### Shared/Common
-
-- Logo, LocaleSwitcher, ThemeToggle, UserAvatarMenu, CommandPalette, SearchInput, EmptyState, ErrorState, ConfirmDialog, Pagination, DataCard, StatCard, PolicyLayout, CurrencyAmount, BookCover, RatingStars
-- Decision: mostly Server-compatible; interactivity wrappers as Client components
-
-### Layout Components
-
-- PublicTopNavbar, PublicFooter, DashboardSidebar, DashboardTopbar, MobileBottomNav, AuthLayoutShell, DashboardLayoutShell
-- Decision: shells as Server components, navigation toggles as Client islands
-
-### Feature Components
-
-- Auth: LoginForm, RegisterForm, OAuthButtons, OTPInput
-- Catalog: BookFilters, BookGrid, BookDetailMeta, ReviewComposer
-- Reader: ReaderShell, ReaderToolbar, BookmarksPanel, HighlightsPanel
-- Billing: PlanCards, CouponApply, GatewaySelector, StripeCheckoutForm
-- Dashboard: ResumeReading, RecommendationPanel, LibraryTabs
-- Settings: ProfileForm, SecurityForm, NotificationForm
-- Notifications: NotificationList, NotificationActions
-- Onboarding: Stepper, PlanChooser, CompletionState
-
-## Server vs Client Rules
-
-- Server Components for data-first pages and SEO-heavy routes
-- Client Components for forms, OTP, Stripe Elements, reader interactions, optimistic mutations, real-time UI states
-- RTK Query only in Client components
-- Server components fetch directly via secure server helpers for initial page payloads
-
-## Redux Store Structure
-
-- src/store/index.ts
-- src/store/hooks.ts
-- src/store/baseApi.ts
-- src/store/baseQueryWithReauth.ts
-- src/store/features/auth/authSlice.ts
-- src/store/features/auth/authApi.ts
-- src/store/features/ui/uiSlice.ts
-- src/store/features/reader/readerSlice.ts
-- src/store/features/notifications/notificationsSlice.ts
-- src/store/features/notifications/notificationsApi.ts
-- src/store/features/checkout/checkoutSlice.ts
-- src/store/features/catalog/catalogSlice.ts
-- src/store/features/catalog/booksApi.ts
-- src/store/features/catalog/authorsApi.ts
-- src/store/features/catalog/categoriesApi.ts
-- src/store/features/onboarding/onboardingApi.ts
-- src/store/features/plans/plansApi.ts
-- src/store/features/subscriptions/subscriptionsApi.ts
-- src/store/features/payments/paymentsApi.ts
-- src/store/features/promotions/promotionsApi.ts
-- src/store/features/reading/readingApi.ts
-- src/store/features/wishlist/wishlistApi.ts
-- src/store/features/reviews/reviewsApi.ts
-- src/store/features/search/searchApi.ts
-- src/store/features/dashboard/dashboardApi.ts
-
-Auth slice state fields:
-
-- actorType, token, user, tempToken, requiresTwoFactor, onboardingStatus, isHydrated, twoFactorEnabled
-
-UI slice state fields:
-
-- sidebar, theme, modal, recentlyViewed, cmdkOpen
-
-## RTK Query Strategy
-
-- Single baseApi and feature injection per domain
-- Domain tag types: Auth, Books, Authors, Categories, Plans, Subscriptions, Payments, Promotions, Reading, Wishlist, Reviews, Notifications, Search, Dashboard
-- 401 handling in baseQueryWithReauth: clear auth state and hard redirect to /auth/login
-- Avoid RTK Query in server components
-
-## Payment Flow
-
-1. Read country and plan context from GET /auth/me and selected plan data.
-2. Read available gateway ordering from GET /payments/gateways/my and adapt the checkout UI to the returned list.
-3. Stripe uses inline Elements client flow when selected.
-4. Redirect-style gateways such as PayPal or SSLCommerz should use return-state handling.
-5. Finalize all outcomes through POST /payments/verify and show payment result page.
-
-## Reader Flow
-
-- Unified /reader/[bookId] route supports PDF and EPUB formats
-- Save progress on page/scroll transitions
-- Support bookmarks and highlights through contextual tools
-- Queue writes for offline and replay on reconnect
-
-## Internationalization
-
-- Locale prefix routes /en and /bn
-- messages/en.json and messages/bn.json
-- next-intl middleware/proxy only for locale routing, not auth
-
-## Project Structure
-
-- src/app/[locale]/(public)/\*
-- src/app/[locale]/auth/\*
-- src/app/[locale]/dashboard/\*
-- src/app/[locale]/onboarding/\*
-- src/app/[locale]/reader/[bookId]/page.tsx
-- src/app/[locale]/not-found.tsx
-- src/app/[locale]/error.tsx
-- src/app/[locale]/offline/page.tsx
-- src/components/common/\*
-- src/components/layout/\*
-- src/components/features/auth/\*
-- src/components/features/catalog/\*
-- src/components/features/reader/\*
-- src/components/features/dashboard/\*
-- src/components/features/billing/\*
-- src/components/features/settings/\*
-- src/components/features/notifications/\*
-- src/lib/api/\*
-- src/lib/auth/\*
-- src/lib/i18n/\*
-- src/store/\*
-- src/messages/en.json
-- src/messages/bn.json
-- public/\*
-
-## Environment Template (.env.local)
-
-- NEXT_PUBLIC_APP_URL=http://localhost:3000
-- NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
-- NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-- NEXT_PUBLIC_FIREBASE_API_KEY=
-- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-- NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-- NEXT_PUBLIC_FIREBASE_APP_ID=
-- NEXT_PUBLIC_DEFAULT_LOCALE=en
-- NEXT_PUBLIC_SUPPORTED_LOCALES=en,bn
-- SESSION_COOKIE_NAME=stackread_session
-- SESSION_COOKIE_SECURE=false
-- INTERNAL_API_TIMEOUT_MS=15000
-
-## Endpoint Coverage Index (Backend Implemented)
-
-- OpenAPI paths mapped: 150
-- OpenAPI operations mapped: 184
-- Postman requests mapped: 184
-- Active backend modules mounted in src/app/routes.ts: 24 (no reservations/borrows modules)
-
-## Implementation Phases
-
-### Phase 1: Foundation
-
-- Build: Next.js setup, Tailwind v4 theme tokens, shadcn baseline, Redux foundation, auth-aware protected layout, proxy redirects, i18n skeleton
-- Pages/components: base layouts, nav systems, locale switch, theme toggle, global shells
-- API integrations: GET /health, GET /admin/settings/maintenance
-- Dependencies: next-intl, next-themes, redux toolkit, sonner, framer-motion, shadcn
-- Order: project bootstrap -> theme/i18n -> store -> layout guard -> quality baseline
-
-### Phase 2: Auth
-
-- Build: login/register/verify/reset/OAuth callback/2FA challenge/password recovery/session management
-- Pages/components: all auth pages
-- API integrations: POST /auth/register, /auth/login, /auth/verify-email, /auth/resend-verification, /auth/forgot-password, /auth/resend-reset-otp, /auth/verify-reset-otp, /auth/reset-password, /auth/2fa/challenge, /auth/2fa/email/send, /auth/logout, /auth/refresh, GET /auth/me/login-history, OAuth routes
-- Dependencies: react-hook-form, zod, lucide-react
-- Order: login/register -> verify/reset -> OAuth callback -> 2FA challenge -> password recovery -> session mgmt -> auth hydration
-
-### Phase 3: Public Experience
-
-- Build: landing, catalogue, book detail, authors, categories, search, legal/static pages
-- API integrations: /books, /authors, /categories, /search, /plans, /flash-sales/active
-- Dependencies: motion + image optimization
-- Order: landing -> catalogue -> detail pages -> search -> static pages
-
-### Phase 4: Subscription + Checkout + Payment
-
-- Build: pricing, checkout, payment result/history, subscription overview/history
-- APIs: /plans, /subscriptions/my, /subscriptions/my/history, /subscriptions/my/cancel, /subscriptions/my/downgrade, /subscriptions/my/renew, /subscriptions/my/upgrade, /coupons/validate, /payments/gateways/my, /payments/initiate, /payments/verify, /payments/my
-- Dependencies: stripe-js, secure callback handling
-- Order: pricing -> checkout -> verify callback -> payment history -> subscription views
-
-### Phase 5: Reader (PDF + EPUB)
-
-- Build: unified reader, progress sync, bookmarks/highlights, offline queue
-- APIs: /reading/\* and /books/:bookId/bookmarks|highlights
-- Dependencies: react-pdf, epub.js
-- Order: reader shell -> progress -> bookmarks -> highlights -> offline queue
-
-### Phase 6: Dashboard Operations
-
-- Build: dashboard home, library, wishlist, and reading states
-- APIs: /dashboard, /dashboard/library, /wishlist, /reading/\*
-- Order: dashboard summary -> my library -> reading management
-
-### Phase 7: Notifications + Settings + Profile
-
-- Build: notification center and account settings pages
-- APIs: /notifications, /notifications/unread-count, /auth/me, /auth/me/password, /auth/me/notification-prefs, /auth/2fa/\*
-- Order: profile -> security -> notifications
-
-### Phase 8: i18n + SEO + Tests + Deploy
-
-- Build: full translation coverage, metadata/SEO, unit/integration tests, deploy hardening
-- APIs: all integrated endpoints smoke tested
-- Dependencies: vitest/testing-library
-- Order: translation freeze -> SEO pass -> test pass -> release checklist
-
-## Known Backend Inconsistencies to Track
-
-- Older docs mention SMS and separate bKash/Nagad webhook endpoints, while backend currently uses POST /webhooks/:gateway dynamic route.
-- Older docs mention /notifications/read-all, backend currently exposes the PATCH endpoint /notifications/mark-read for bulk-read behavior.
-- Legacy docs include /coupons/validate as authenticated user-only; backend route currently allows unauthenticated validation.
-- Legacy docs mention /search/popular, backend currently uses /search/popular-terms.
-
-## Non-Negotiables
-
-- Backend routes are the only API source of truth
-- No fake/mock data
-- No SMS references in user-facing flows
-- Auth checks in protected layout server boundary, not proxy
-- User 2FA optional and settings-driven
+## Plan: Stackread Web Customer App
+
+Build out `stackread-web` as the customer-facing Next.js app for Stackread, using the backend as the source of truth for auth, onboarding, catalog browsing, reading, subscription, payment, and notification flows. The current repo already has the auth/onboarding shell, locale routing, Redux Toolkit + RTK Query, cookie-based session handling, and a protected dashboard scaffold, so the plan should extend that foundation instead of replacing it.
+
+**Steps**
+
+1. Lock the product scope and route map around the customer app only.
+   - Keep `stackread-web` focused on the customer journey only: public browsing, auth, onboarding, book discovery, reading, wishlist, subscriptions, payments, notifications, and the protected user dashboard.
+   - Exclude staff/admin surfaces entirely from this app: RBAC, audit logs, reports, system settings, publishers back-office, staff management, member administration, and any other `/admin/*` or `/staff/*` backend capability belong in `stackread-dashboard`.
+   - Anchor the route map to the existing Next.js App Router structure in `src/app/[locale]/*`, with the app staying organized around public pages, auth pages, onboarding pages, and protected customer pages.
+   - Treat these as the core customer routes to preserve and flesh out: `/(public)`, `/auth/*`, `/onboarding/*`, `/(protected)/dashboard`, and future protected book/account/subscription/payment/notification screens.
+   - Keep locale-prefixed navigation and redirects intact for both supported locales so every customer route remains reachable under the existing i18n shell.
+2. Normalize the backend contract in the web API layer, then add client endpoints in stages.
+   - Keep the backend response envelope fixed in `src/lib/api/types.ts`: every client request should expect the `ApiEnvelope` / `ApiErrorEnvelope` shape, with field-level validation errors surfaced from the `errors` array when present.
+   - Preserve `src/store/baseQueryWithReauth.ts` as the central request path so authenticated requests can transparently reuse cookie-based sessions, bearer tokens, and refresh-token recovery without duplicating retry logic in individual screens.
+   - Extend RTK Query in `src/store/features/*` by domain, not by screen, so the web app can share data and cache state across pages.
+   - Add the customer-facing API slices and endpoint groups in this order: auth/account, onboarding, books/catalog, search, dashboard/home feed, wishlist, reviews, reading/progress, subscriptions, payments, notifications, and profile preferences.
+   - For auth/account, support the backend flows exposed by `src/modules/auth/router.ts`: register, login, logout, refresh, verify-email, resend-verification, forgot-password, resend-reset-otp, verify-reset-otp, reset-password, `GET /me`, `GET /me/login-history`, `PATCH /me`, `PATCH /me/password`, `PATCH /me/notification-prefs`, and the full 2FA surface (`POST /2fa/challenge`, `POST /2fa/email/send`, `POST /2fa/enable`, `POST /2fa/verify`, `POST /2fa/disable`, `GET /2fa/backup-codes`) plus Google/Facebook OAuth entry points.
+   - For onboarding, wire the public plan catalog and user-specific onboarding state exposed by `src/modules/onboarding/router.ts`: `GET /onboarding/plans`, `GET /onboarding/status`, `POST /onboarding/select`, and `POST /onboarding/complete`.
+   - Keep the RTK Query base layer aligned with backend auth and locale behavior so every endpoint can reuse the same base URL, headers, and refresh handling before adding domain-specific cache tags, optimistic updates, or invalidation rules.
+3. Complete the authentication and onboarding journey end-to-end.
+   - Keep the current login/register/2FA/reset-password/OAuth patterns, but make them consistent across all auth pages, error states, redirects, and persisted session handling.
+   - Treat `src/app/[locale]/(protected)/layout.tsx` as the server-side gate for authenticated customer pages: it should require a valid `/auth/me` session and then redirect pending users into onboarding instead of rendering protected content too early.
+   - Treat `src/app/[locale]/onboarding/layout.tsx` as the onboarding gate: users who have completed onboarding should be redirected back into the protected app, while pending or selected-plan users stay in the onboarding flow until they finish.
+   - Keep login outcome handling aligned with backend behavior: successful login should persist the session, store the user profile, respect `requiresTwoFactor`, and route users to onboarding or dashboard based on `GET /onboarding/status`.
+   - Cover the full customer auth lifecycle, not only sign-in: register, verify email, resend verification, forgot password, resend reset OTP, verify reset OTP, reset password, 2FA challenge, 2FA email OTP send, logout, and session refresh.
+   - Make OAuth callbacks deterministic by handling Google/Facebook success and failure states cleanly, preserving the locale-aware login redirect on backend failures and the authenticated destination on success.
+   - Keep session persistence stable across reloads and tab refreshes by keeping the cookie/token storage flow, client hydration, and 401 refresh recovery in sync with the backend session model.
+4. Build the public discovery experience around backend browsing endpoints.
+   - Implement the home and catalog experience for featured books, recent additions, search suggestions, categories, authors, publishers, and promotions/active coupon messaging.
+   - Use the public backend reads first, then layer in search, filtering, and pagination using the backend query conventions.
+   - Keep the existing public layout and locale-aware navigation while making the landing experience feel like the product entry point rather than a placeholder.
+5. Add the protected reading experience and book detail flow.
+   - Build book detail, preview, and reading pages that consume the books and reading endpoints, including reading progress, session tracking, bookmarks, highlights, and reading history.
+   - Enforce subscription gating in the client flow so access checks, plan eligibility, and file download/view behavior match backend access rules.
+   - Keep these screens responsive and reader-focused, since they are the core value of the app.
+6. Add the subscription, payment, and account management surfaces.
+   - Implement current subscription, renewal, upgrade/downgrade, payment history, and gateway selection flows.
+   - Add user profile, login history, email verification state, password change, and notification preferences views if they are exposed by the backend profile APIs.
+   - Make payment and subscription status screens resilient to pending/processing states, retries, and backend verification delays.
+7. Wire notifications and async-state UX.
+   - Add a notifications inbox and unread count state backed by the backend notifications module.
+   - Surface pending states for payment verification, subscription expiry, and any delayed backend processes with loading, empty, and error states instead of optimistic-only UI.
+   - If the backend exposes push delivery hooks that the web app can use directly, keep that optional and isolated behind the notifications layer rather than coupling it to core navigation.
+8. Polish global app behavior, i18n, and error handling.
+   - Keep `next-intl` locale routing, theme switching, and `src/proxy.ts` behavior intact while filling in missing translation and navigation details.
+   - Standardize forms with React Hook Form + Zod, and map backend validation errors into field-level UI consistently.
+   - Add loading skeletons, empty states, auth guards, and route-level redirects where the current scaffold still renders placeholder content.
+9. Verify the customer app with focused checks once implementation starts.
+   - Run lint and build validation for the web app after the API wiring and page work are in place.
+   - Manually test login, 2FA, onboarding redirect, public browsing, protected dashboard access, password reset, and at least one payment/subscription flow against a live backend.
+   - Confirm locale switching, session persistence, and 401 refresh recovery behave correctly in the browser.
+
+**Relevant files**
+
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/layout.tsx` — locale validation and top-level route shell.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/(protected)/layout.tsx` — server-side auth and onboarding gate.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/onboarding/layout.tsx` — onboarding redirect logic.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/auth/*` — login, register, 2FA, password reset, verification, and OAuth callback pages.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/(public)/*` — public home and discovery entry points.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/app/[locale]/(protected)/dashboard/page.tsx` — current protected customer dashboard scaffold.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/store/baseQueryWithReauth.ts` — automatic auth refresh and redirect handling.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/store/features/auth/authApi.ts` — existing auth endpoint patterns to extend.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/store/features/auth/authSlice.ts` — auth state and login outcome handling.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/lib/api/server.ts` — server-side API requests for layouts and protected pages.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/lib/auth/*` — token storage, guards, onboarding resolution, and auth normalization helpers.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/components/*` — shared layout, UI, provider, navbar, and form primitives.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/i18n/*` — locale routing and request config.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/proxy.ts` — locale-aware middleware routing.
+- `c:/Users/devmd/work/library-management-system/stackread-web/src/lib/env.ts` — API base URL, app URL, locale, and cookie configuration.
+
+**Verification**
+
+1. Validate the final page and store changes with `pnpm lint` and `pnpm build` in `stackread-web`.
+2. Exercise the key backend flows manually in the browser: register, verify email, login, 2FA, onboarding, dashboard redirect, search/catalog, and subscription/payment pages.
+3. Confirm the app still handles expired sessions by forcing a 401 and observing refresh or redirect behavior.
+4. Check the locale-prefixed routes in both supported locales and confirm translations and redirects behave consistently.
+
+**Decisions**
+
+- Keep `stackread-web` customer-facing only; do not plan admin/staff surfaces here.
+- Treat the backend response envelope and auth/session behavior as fixed contracts and align the web around them.
+- Prefer incremental extension of the existing scaffold over a rewrite, because auth, onboarding, token persistence, and locale plumbing are already in place.
+- Use server-side layout checks for protected routes and onboarding redirects instead of duplicating that logic only in client components.
+
+**Further Considerations**
+
+1. If the next phase should be MVP-first, start with auth, onboarding, home, search, book detail, and dashboard before adding reading annotations and notifications.
+2. If you want parity faster, the reading, subscription, payment, and notification work can be split into parallel tracks after the API layer is normalized.

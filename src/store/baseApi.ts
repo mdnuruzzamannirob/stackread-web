@@ -5,6 +5,6 @@ import { baseQueryWithReauth } from '@/store/baseQueryWithReauth'
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Auth'],
+  tagTypes: ['Auth', 'Onboarding'],
   endpoints: () => ({}),
 })

@@ -7,102 +7,37 @@ import { toast } from 'sonner'
 import { AuthCard } from '@/components/layout/auth-card'
 import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { fetchOnboardingStatus } from '@/lib/auth/onboarding'
-import { getStoredAccessToken } from '@/lib/auth/token-storage'
-import { env } from '@/lib/env'
-
-type Plan = {
-  code: string
-  name: string
-  price: number
-  billingCycle: string
-  isPaid: boolean
-}
-
-type OnboardingSelectResponse = {
-  status?: string
-  nextStep?: string
-}
+import {
+  useGetOnboardingPlansQuery,
+  useGetOnboardingStatusQuery,
+  useSelectOnboardingPlanMutation,
+} from '@/store/features/onboarding/onboardingApi'
 
 export default function OnboardingPlanSelectionPage() {
   const params = useParams<{ locale: string }>()
   const locale = params.locale ?? 'en'
   const router = useRouter()
-  const [plans, setPlans] = useState<Plan[]>([])
   const [selectedPlanCode, setSelectedPlanCode] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { data: plansResponse, isLoading: isPlansLoading } =
+    useGetOnboardingPlansQuery()
+  const { data: statusResponse } = useGetOnboardingStatusQuery()
+  const [selectOnboardingPlan, { isLoading: isSubmitting }] =
+    useSelectOnboardingPlanMutation()
+
+  const plans = Array.isArray(plansResponse?.data) ? plansResponse.data : []
 
   useEffect(() => {
-    const loadPlans = async () => {
-      const token = getStoredAccessToken()
-
-      if (!token) {
-        router.replace(`/${locale}/auth/login`)
-        return
-      }
-
-      try {
-        const response = await fetch(`${env.apiBaseUrl}/onboarding/plans`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-store',
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to load onboarding plans')
-        }
-
-        const json = (await response.json()) as { data?: Plan[] }
-        setPlans(Array.isArray(json.data) ? json.data : [])
-
-        const status = await fetchOnboardingStatus(token)
-        if (status === 'completed') {
-          router.replace(`/${locale}/dashboard`)
-        }
-      } catch (error) {
-        toast.error(
-          getApiErrorMessage(error, 'Unable to load onboarding plans'),
-        )
-      } finally {
-        setIsLoading(false)
-      }
+    if (statusResponse?.data?.status === 'completed') {
+      router.replace(`/${locale}/dashboard`)
     }
-
-    void loadPlans()
-  }, [locale, router])
+  }, [locale, router, statusResponse?.data?.status])
 
   const selectPlan = async (planCode: string) => {
-    const token = getStoredAccessToken()
-
-    if (!token) {
-      router.replace(`/${locale}/auth/login`)
-      return
-    }
-
-    setIsSubmitting(true)
     setSelectedPlanCode(planCode)
 
     try {
-      const response = await fetch(`${env.apiBaseUrl}/onboarding/select`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ planCode }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to select onboarding plan')
-      }
-
-      const json = (await response.json()) as {
-        data?: OnboardingSelectResponse
-      }
-      const nextStep = json.data?.nextStep
+      const response = await selectOnboardingPlan({ planCode }).unwrap()
+      const nextStep = response.data?.nextStep
 
       toast.success('Plan selected')
 
@@ -114,8 +49,6 @@ export default function OnboardingPlanSelectionPage() {
       router.push(`/${locale}/onboarding/completion`)
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Unable to select plan'))
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -124,7 +57,7 @@ export default function OnboardingPlanSelectionPage() {
       title="Choose a plan"
       subtitle="Select the onboarding plan that fits your account."
     >
-      {isLoading ? (
+      {isPlansLoading ? (
         <p className="text-sm text-muted-foreground">Loading plans...</p>
       ) : (
         <div className="space-y-3">

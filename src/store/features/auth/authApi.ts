@@ -21,6 +21,27 @@ type VerifyResetOtpBody = { email: string; otp: string }
 type ResetPasswordBody = { resetToken: string; newPassword: string }
 type ChallengeBody = { tempToken: string; otp: string }
 type TempTokenBody = { tempToken: string }
+type UpdateMeBody = {
+  firstName?: string
+  lastName?: string
+  phone?: string
+  profilePicture?: string
+  countryCode?: string
+  notificationPreferences?: {
+    email?: boolean
+    push?: boolean
+  }
+}
+
+type ChangePasswordBody = {
+  currentPassword: string
+  newPassword: string
+}
+
+type UpdateNotificationPreferencesBody = {
+  email?: boolean
+  push?: boolean
+}
 
 type RegisterResponse = {
   user: UserProfile
@@ -45,6 +66,27 @@ type LoginHistoryRow = {
   ip?: string
   userAgent?: string
   createdAt: string
+}
+
+type MeResponse = {
+  id: string
+  firstName: string
+  lastName?: string
+  email: string
+  countryCode?: string
+  phone?: string
+  profilePicture?: string
+  provider?: 'local' | 'google' | 'facebook'
+  isEmailVerified?: boolean
+  isSuspended?: boolean
+  twoFactorEnabled?: boolean
+  notificationPreferences?: {
+    email?: boolean
+    push?: boolean
+  }
+  lastLoginAt?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export const authApi = baseApi.injectEndpoints({
@@ -168,6 +210,42 @@ export const authApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Auth'],
     }),
+    me: builder.query<ApiEnvelope<MeResponse>, void>({
+      query: () => ({
+        url: '/auth/me',
+        method: 'GET',
+      }),
+      providesTags: ['Auth'],
+    }),
+    updateMe: builder.mutation<ApiEnvelope<MeResponse>, UpdateMeBody>({
+      query: (body) => ({
+        url: '/auth/me',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
+    changeMyPassword: builder.mutation<
+      ApiEnvelope<{ success: boolean }>,
+      ChangePasswordBody
+    >({
+      query: (body) => ({
+        url: '/auth/me/password',
+        method: 'PATCH',
+        body,
+      }),
+    }),
+    updateMyNotificationPreferences: builder.mutation<
+      ApiEnvelope<{ success: boolean }>,
+      UpdateNotificationPreferencesBody
+    >({
+      query: (body) => ({
+        url: '/auth/me/notification-prefs',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
   }),
 })
 
@@ -185,4 +263,8 @@ export const {
   useLogoutMutation,
   useRefreshMutation,
   useLoginHistoryQuery,
+  useMeQuery,
+  useUpdateMeMutation,
+  useChangeMyPasswordMutation,
+  useUpdateMyNotificationPreferencesMutation,
 } = authApi

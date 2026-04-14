@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 
+import { env } from '@/lib/env'
+
 export default function Page() {
-  redirect('/en')
+  redirect(`/${env.defaultLocale}`)
 }
