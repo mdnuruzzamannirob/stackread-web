@@ -7,10 +7,7 @@ type PersistSessionInput = {
   refreshToken?: string
 }
 
-export function persistSession({
-  accessToken,
-  refreshToken: _refreshToken,
-}: PersistSessionInput) {
+export function persistSession({ accessToken }: PersistSessionInput) {
   document.cookie = `${env.sessionCookieName}=${accessToken}; Path=/; SameSite=Lax`
 }
 

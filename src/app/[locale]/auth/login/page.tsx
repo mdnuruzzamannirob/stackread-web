@@ -2,7 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -12,6 +13,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { useRedirectAuthenticated } from '@/lib/auth/guards'
 import { extractLoginPayload } from '@/lib/auth/normalize-auth'
+import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { persistSession } from '@/lib/auth/token-storage'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
@@ -33,6 +35,7 @@ export default function LoginPage() {
   const router = useRouter()
   const params = useParams<{ locale: string }>()
   const locale = params.locale ?? 'en'
+  const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
   useRedirectAuthenticated(locale)
 
@@ -45,6 +48,13 @@ export default function LoginPage() {
       password: '',
     },
   })
+
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      toast.error(error)
+    }
+  }, [searchParams])
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -75,7 +85,11 @@ export default function LoginPage() {
       )
 
       toast.success('Logged in')
-      router.push(`/${locale}/dashboard`)
+      const destination = await resolveAuthenticatedDestination({
+        accessToken: loginPayload.accessToken,
+        locale,
+      })
+      router.push(destination)
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Login failed'))
     }

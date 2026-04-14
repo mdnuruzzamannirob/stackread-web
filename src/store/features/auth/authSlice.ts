@@ -38,6 +38,12 @@ const authSlice = createSlice({
         state.tempToken = action.payload.tempToken
       }
     },
+    setOnboardingStatus: (
+      state,
+      action: PayloadAction<AuthState['onboardingStatus']>,
+    ) => {
+      state.onboardingStatus = action.payload
+    },
     setHydratedToken: (state, action: PayloadAction<string | null>) => {
       state.token = action.payload
       state.isHydrated = true
@@ -52,6 +58,7 @@ const authSlice = createSlice({
 export const {
   setAuthenticatedSession,
   setLoginOutcome,
+  setOnboardingStatus,
   setHydratedToken,
   clearAuthState,
 } = authSlice.actions

@@ -1,10 +1,15 @@
 import { redirect } from 'next/navigation'
 
+import { serverApiRequest } from '@/lib/api/server'
 import { getServerAccessToken } from '@/lib/auth/server-session'
 import { env } from '@/lib/env'
 
+type OnboardingStatusResponse = {
+  status?: 'pending' | 'selected' | 'completed'
+}
+
 async function hasValidUserSession(token: string) {
-  const response = await fetch(`${env.apiBaseUrl}/auth/me/login-history`, {
+  const response = await fetch(`${env.apiBaseUrl}/auth/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -12,6 +17,13 @@ async function hasValidUserSession(token: string) {
   })
 
   return response.ok
+}
+
+async function getOnboardingStatus(token: string) {
+  return serverApiRequest<OnboardingStatusResponse>({
+    path: '/onboarding/status',
+    token,
+  })
 }
 
 export default async function ProtectedLayout({
@@ -32,6 +44,12 @@ export default async function ProtectedLayout({
 
   if (!isValid) {
     redirect(`/${locale}/auth/login`)
+  }
+
+  const onboarding = await getOnboardingStatus(token)
+
+  if (onboarding?.status === 'pending' || onboarding?.status === 'selected') {
+    redirect(`/${locale}/onboarding/plan-selection`)
   }
 
   return <div className="min-h-screen bg-background px-4 py-8">{children}</div>

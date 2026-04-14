@@ -142,7 +142,10 @@ export function parseOAuthCallbackParams(searchParams: URLSearchParams): {
   tempToken: string | null
   requiresTwoFactor: boolean
   user: UserProfile | null
+  error: string | null
 } {
+  const error = searchParams.get('error')
+
   const accessToken =
     searchParams.get('accessToken') ??
     searchParams.get('token') ??
@@ -176,5 +179,6 @@ export function parseOAuthCallbackParams(searchParams: URLSearchParams): {
     tempToken,
     requiresTwoFactor,
     user,
+    error,
   }
 }

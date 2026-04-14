@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { AuthCard } from '@/components/layout/auth-card'
 import { parseOAuthCallbackParams } from '@/lib/auth/normalize-auth'
+import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { persistSession } from '@/lib/auth/token-storage'
 import {
   setAuthenticatedSession,
@@ -21,8 +22,20 @@ export default function OAuthCallbackPage() {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    const { accessToken, refreshToken, tempToken, requiresTwoFactor, user } =
-      parseOAuthCallbackParams(searchParams)
+    const {
+      accessToken,
+      refreshToken,
+      tempToken,
+      requiresTwoFactor,
+      user,
+      error,
+    } = parseOAuthCallbackParams(searchParams)
+
+    if (error) {
+      toast.error(error)
+      router.replace(`/${locale}/auth/login?error=${encodeURIComponent(error)}`)
+      return
+    }
 
     if (requiresTwoFactor && tempToken) {
       dispatch(
@@ -58,7 +71,12 @@ export default function OAuthCallbackPage() {
     )
 
     toast.success('OAuth login successful')
-    router.replace(`/${locale}/dashboard`)
+    void resolveAuthenticatedDestination({
+      accessToken,
+      locale,
+    }).then((destination) => {
+      router.replace(destination)
+    })
   }, [dispatch, locale, router, searchParams])
 
   return (

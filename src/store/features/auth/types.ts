@@ -25,7 +25,7 @@ export type AuthState = {
   user: UserProfile | null
   tempToken: string | null
   requiresTwoFactor: boolean
-  onboardingStatus: 'unknown' | 'completed' | 'pending'
+  onboardingStatus: 'unknown' | 'completed' | 'pending' | 'selected'
   isHydrated: boolean
   twoFactorEnabled: boolean
 }

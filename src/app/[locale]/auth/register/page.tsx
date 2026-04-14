@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { useRedirectAuthenticated } from '@/lib/auth/guards'
 import { extractRegisterSession } from '@/lib/auth/normalize-auth'
+import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { persistSession } from '@/lib/auth/token-storage'
 import { useRegisterMutation } from '@/store/features/auth/authApi'
 import { setAuthenticatedSession } from '@/store/features/auth/authSlice'
@@ -72,7 +73,11 @@ export default function RegisterPage() {
       )
 
       toast.success('Account created')
-      router.push(`/${locale}/dashboard`)
+      const destination = await resolveAuthenticatedDestination({
+        accessToken: session.accessToken,
+        locale,
+      })
+      router.push(destination)
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Registration failed'))
     }

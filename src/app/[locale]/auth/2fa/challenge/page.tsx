@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { useRequireTempToken } from '@/lib/auth/guards'
 import { extractSession } from '@/lib/auth/normalize-auth'
+import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { persistSession } from '@/lib/auth/token-storage'
 import {
   useChallengeTwoFactorMutation,
@@ -80,7 +81,11 @@ export default function TwoFactorChallengePage() {
       )
 
       toast.success('Two-factor challenge passed')
-      router.push(`/${locale}/dashboard`)
+      const destination = await resolveAuthenticatedDestination({
+        accessToken: session.accessToken,
+        locale,
+      })
+      router.push(destination)
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Challenge failed'))
     }

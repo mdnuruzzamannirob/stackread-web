@@ -5,6 +5,7 @@ import {
   type FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react'
 
+import { routing } from '@/i18n/routing'
 import {
   clearSession,
   getStoredAccessToken,
@@ -32,6 +33,32 @@ const rawBaseQuery = fetchBaseQuery({
   },
 })
 
+function getLocaleFromPath(pathname: string | null) {
+  if (!pathname) {
+    return env.defaultLocale
+  }
+
+  const [firstSegment] = pathname.split('/').filter(Boolean)
+
+  if (
+    firstSegment &&
+    routing.locales.includes(firstSegment as (typeof routing.locales)[number])
+  ) {
+    return firstSegment
+  }
+
+  return env.defaultLocale
+}
+
+function hardRedirectToLogin() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const locale = getLocaleFromPath(window.location.pathname)
+  window.location.replace(`/${locale}/auth/login`)
+}
+
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -52,6 +79,13 @@ export const baseQueryWithReauth: BaseQueryFn<
     extraOptions,
   )
 
+  if (refreshResult.error) {
+    clearSession()
+    api.dispatch(clearAuthState())
+    hardRedirectToLogin()
+    return result
+  }
+
   const accessToken =
     (refreshResult.data as { data?: { accessToken?: string } } | undefined)
       ?.data?.accessToken ?? null
@@ -59,6 +93,7 @@ export const baseQueryWithReauth: BaseQueryFn<
   if (!accessToken) {
     clearSession()
     api.dispatch(clearAuthState())
+    hardRedirectToLogin()
     return result
   }
 
