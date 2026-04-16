@@ -19,10 +19,14 @@ export function DashboardShell({ locale, children }: DashboardShellProps) {
     : pathname.startsWith(`/${locale}/settings`)
       ? 'Settings'
       : pathname.startsWith(`/${locale}/profile`)
-        ? 'My Profile'
+        ? 'Account Settings'
         : pathname.startsWith(`/${locale}/security`)
-          ? 'Security'
-          : 'My Account'
+          ? 'Account Settings'
+          : pathname.startsWith(`/${locale}/preferences`)
+            ? 'Account Settings'
+            : pathname.startsWith(`/${locale}/danger`)
+              ? 'Account Settings'
+              : 'My Account'
 
   return (
     <div className="min-h-dvh bg-brand-50 text-brand-900">
