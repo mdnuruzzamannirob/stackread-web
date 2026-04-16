@@ -8,7 +8,10 @@ import { toast } from 'sonner'
 import { AuthCard } from '@/components/layout/auth-card'
 import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { useGetOnboardingStatusQuery } from '@/store/features/onboarding/onboardingApi'
+import {
+  useConfirmOnboardingPaymentMutation,
+  useLazyGetOnboardingStatusQuery,
+} from '@/store/features/onboarding/onboardingApi'
 
 export default function OnboardingSuccessPage() {
   const t = useTranslations('onboarding.success')
@@ -18,73 +21,70 @@ export default function OnboardingSuccessPage() {
   const searchParams = useSearchParams()
   const [statusText, setStatusText] = useState(t('waitingForStripe'))
   const [isFinalizing, setIsFinalizing] = useState(true)
-  const hasCompletedRef = useRef(false)
+  const hasStartedRef = useRef(false)
   const paymentReference = searchParams.get('ref')
   const stripeSessionId = searchParams.get('session_id')
-
-  const { data: statusResponse, refetch } = useGetOnboardingStatusQuery()
-
-  useEffect(() => {
-    if (statusResponse?.data?.status === 'completed') {
-      hasCompletedRef.current = true
-      const timeout = window.setTimeout(() => {
-        router.replace(`/${locale}/dashboard`)
-      }, 1200)
-
-      return () => {
-        window.clearTimeout(timeout)
-      }
-    }
-  }, [locale, router, statusResponse?.data?.status])
+  const [confirmOnboardingPayment] = useConfirmOnboardingPaymentMutation()
+  const [fetchOnboardingStatus] = useLazyGetOnboardingStatusQuery()
 
   useEffect(() => {
-    if (hasCompletedRef.current) {
+    if (hasStartedRef.current) {
       return
     }
 
+    hasStartedRef.current = true
+
     let isMounted = true
-    let attempts = 0
-    const maxAttempts = 20
+    const maxAttempts = 8
 
     const run = async () => {
-      while (isMounted && attempts < maxAttempts && !hasCompletedRef.current) {
-        attempts += 1
-        setStatusText(t('checkingPayment', { attempts, maxAttempts }))
-
+      if (stripeSessionId) {
         try {
           setStatusText(t('confirmingPayment'))
-          const refreshed = await refetch()
-          const onboardingStatus = refreshed.data?.data?.status ?? null
+          const confirmation = await confirmOnboardingPayment({
+            sessionId: stripeSessionId,
+            ...(paymentReference ? { reference: paymentReference } : {}),
+          }).unwrap()
 
-          if (onboardingStatus !== 'completed') {
-            await new Promise((resolve) => {
-              window.setTimeout(resolve, 3000)
-            })
-            continue
+          if (confirmation.data?.status === 'completed') {
+            setStatusText(t('completed'))
+            toast.success(t('completedToast'))
+            router.replace(`/${locale}/dashboard`)
+            return
           }
 
-          hasCompletedRef.current = true
+          setStatusText(t('paymentConfirmed'))
+        } catch (error) {
+          toast.error(getApiErrorMessage(error, t('retryLater')))
+        }
+      }
+
+      for (let attempt = 1; attempt <= maxAttempts && isMounted; attempt += 1) {
+        setStatusText(t('checkingPayment', { attempts: attempt, maxAttempts }))
+
+        const refreshed = await fetchOnboardingStatus()
+        const onboardingStatus = refreshed.data?.data?.status ?? null
+
+        if (onboardingStatus === 'completed') {
           setStatusText(t('completed'))
           toast.success(t('completedToast'))
           router.replace(`/${locale}/dashboard`)
           return
-        } catch (error) {
-          if (attempts >= maxAttempts) {
-            setStatusText(t('takingLonger'))
-            toast.error(getApiErrorMessage(error, t('retryLater')))
-            setIsFinalizing(false)
-            return
-          }
         }
 
-        await new Promise((resolve) => {
-          window.setTimeout(resolve, 3000)
-        })
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => {
+            window.setTimeout(resolve, 1200)
+          })
+        }
       }
 
-      if (isMounted) {
-        setIsFinalizing(false)
+      if (!isMounted) {
+        return
       }
+
+      setStatusText(t('takingLonger'))
+      setIsFinalizing(false)
     }
 
     void run()
@@ -92,7 +92,15 @@ export default function OnboardingSuccessPage() {
     return () => {
       isMounted = false
     }
-  }, [t, locale, paymentReference, refetch, router, stripeSessionId])
+  }, [
+    confirmOnboardingPayment,
+    locale,
+    paymentReference,
+    fetchOnboardingStatus,
+    router,
+    stripeSessionId,
+    t,
+  ])
 
   useEffect(() => {
     if (!paymentReference && !stripeSessionId) {

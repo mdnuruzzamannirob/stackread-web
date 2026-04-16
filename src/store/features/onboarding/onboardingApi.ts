@@ -32,6 +32,17 @@ export type CompleteOnboardingResponse = {
   selectedPlanCode: string
 }
 
+export type ConfirmOnboardingPaymentBody = {
+  sessionId: string
+  reference?: string
+}
+
+export type ConfirmOnboardingPaymentResponse = {
+  status: OnboardingStatus | 'pending' | 'completed'
+  selectedPlanCode?: string
+  completedAt?: string
+}
+
 export type SelectOnboardingPlanResponse = {
   id: string
   plan: OnboardingPlan
@@ -84,12 +95,25 @@ export const onboardingApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Onboarding', 'Auth'],
     }),
+    confirmOnboardingPayment: builder.mutation<
+      ApiEnvelope<ConfirmOnboardingPaymentResponse>,
+      ConfirmOnboardingPaymentBody
+    >({
+      query: (body) => ({
+        url: '/onboarding/confirm-payment',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Onboarding'],
+    }),
   }),
 })
 
 export const {
   useGetOnboardingPlansQuery,
   useGetOnboardingStatusQuery,
+  useLazyGetOnboardingStatusQuery,
   useSelectOnboardingPlanMutation,
   useCompleteOnboardingMutation,
+  useConfirmOnboardingPaymentMutation,
 } = onboardingApi
