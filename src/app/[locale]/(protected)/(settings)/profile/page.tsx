@@ -24,7 +24,12 @@ import {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_UPLOAD_IMAGE_BYTES = 512 * 1024
 const MAX_IMAGE_DIMENSION = 1024
-const ACCEPTED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ACCEPTED_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]
 
 const resolveInitials = (
   firstName: string,
@@ -194,9 +199,10 @@ export default function ProfilePage() {
     const image = await loadImageFromDataUrl(originalDataUrl)
 
     const maxDimension = Math.max(image.width, image.height)
-    const scale = maxDimension > MAX_IMAGE_DIMENSION
-      ? MAX_IMAGE_DIMENSION / maxDimension
-      : 1
+    const scale =
+      maxDimension > MAX_IMAGE_DIMENSION
+        ? MAX_IMAGE_DIMENSION / maxDimension
+        : 1
 
     const width = Math.max(1, Math.round(image.width * scale))
     const height = Math.max(1, Math.round(image.height * scale))
@@ -215,7 +221,10 @@ export default function ProfilePage() {
     let quality = 0.9
     let output = canvas.toDataURL('image/jpeg', quality)
 
-    while (estimateDataUrlBytes(output) > MAX_UPLOAD_IMAGE_BYTES && quality > 0.45) {
+    while (
+      estimateDataUrlBytes(output) > MAX_UPLOAD_IMAGE_BYTES &&
+      quality > 0.45
+    ) {
       quality -= 0.1
       output = canvas.toDataURL('image/jpeg', quality)
     }

@@ -539,7 +539,9 @@ export default function SecurityPage() {
               <button
                 type="button"
                 onClick={() => setLoginHistoryPage((previous) => previous + 1)}
-                disabled={!loginHistoryPagination.hasNextPage || isLoadingHistory}
+                disabled={
+                  !loginHistoryPagination.hasNextPage || isLoadingHistory
+                }
                 className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
@@ -621,16 +623,18 @@ export default function SecurityPage() {
                 ? handleCompleteTotpSetup()
                 : handleStartTotpSetup())
             }
-            disabled={totpSetupData ? isVerifyingTwoFactor : isGeneratingTwoFactor}
+            disabled={
+              totpSetupData ? isVerifyingTwoFactor : isGeneratingTwoFactor
+            }
             className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {totpSetupData
-              ? isVerifyingTwoFactor
-                ? <BusyIcon />
-                : null
-              : isGeneratingTwoFactor
-                ? <BusyIcon />
-                : null}
+            {totpSetupData ? (
+              isVerifyingTwoFactor ? (
+                <BusyIcon />
+              ) : null
+            ) : isGeneratingTwoFactor ? (
+              <BusyIcon />
+            ) : null}
             {totpSetupData ? 'Verify & Enable' : 'Verify Password & Continue'}
           </button>
         </div>
@@ -704,13 +708,13 @@ export default function SecurityPage() {
             }
             className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isEmailSetupStarted
-              ? isVerifyingTwoFactor
-                ? <BusyIcon />
-                : null
-              : isGeneratingTwoFactor || isSendingSetupEmailOtp
-                ? <BusyIcon />
-                : null}
+            {isEmailSetupStarted ? (
+              isVerifyingTwoFactor ? (
+                <BusyIcon />
+              ) : null
+            ) : isGeneratingTwoFactor || isSendingSetupEmailOtp ? (
+              <BusyIcon />
+            ) : null}
             {isEmailSetupStarted
               ? 'Verify & Enable'
               : 'Verify Password & Continue'}
@@ -751,7 +755,6 @@ export default function SecurityPage() {
           </button>
         </div>
       </Modal>
-
     </section>
   )
 }

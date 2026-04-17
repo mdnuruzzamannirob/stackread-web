@@ -177,7 +177,7 @@ export default function SubscriptionPage() {
   const paymentMethodShortLabel =
     paymentMethod?.brand && paymentMethod?.last4
       ? `${paymentMethod.brand} | **** ${paymentMethod.last4}`
-      : paymentMethod?.label ?? 'No payment method on file'
+      : (paymentMethod?.label ?? 'No payment method on file')
   const paymentMethodExpiryLabel =
     typeof paymentMethod?.expMonth === 'number' &&
     typeof paymentMethod?.expYear === 'number'
