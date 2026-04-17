@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   BadgeCheck,
   Pencil,
-  Plus,
   Shield,
   SlidersHorizontal,
   User,
@@ -114,13 +113,6 @@ export function SettingsShell({ locale, children }: SettingsShellProps) {
             })}
           </nav>
 
-          <button
-            type="button"
-            className="mt-8 inline-flex items-center gap-2 rounded-md bg-brand-700 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_8px_16px_-8px_rgba(4,63,49,0.65)] transition hover:bg-brand-800"
-          >
-            <Plus className="size-4" />
-            Add New Book
-          </button>
         </aside>
 
         <section className="space-y-7">{children}</section>
