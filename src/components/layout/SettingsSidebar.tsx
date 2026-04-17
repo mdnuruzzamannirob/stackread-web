@@ -80,7 +80,7 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
       isDanger: false,
     },
     {
-      label: 'Subscription',
+      label: 'Billing',
       href: 'subscription',
       icon: CreditCard,
       isDanger: false,

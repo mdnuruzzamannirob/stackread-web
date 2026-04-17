@@ -31,8 +31,10 @@ type TempTokenBody = { tempToken: string }
 type UpdateMeBody = {
   firstName?: string
   lastName?: string
+  email?: string
   phone?: string
   profilePicture?: string
+  address?: string
   countryCode?: string
   notificationPreferences?: {
     email?: boolean
@@ -276,6 +278,17 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth'],
     }),
+    deleteMyAccount: builder.mutation<
+      ApiEnvelope<{ success: true }>,
+      { confirmText: 'DELETE'; currentPassword?: string }
+    >({
+      query: (body) => ({
+        url: '/auth/me',
+        method: 'DELETE',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
   }),
 })
 
@@ -306,4 +319,5 @@ export const {
   useUpdateMyProfilePictureMutation,
   useChangeMyPasswordMutation,
   useUpdateMyNotificationPreferencesMutation,
+  useDeleteMyAccountMutation,
 } = authApi

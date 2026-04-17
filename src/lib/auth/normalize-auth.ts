@@ -117,6 +117,8 @@ function parseUserFromUnknown(input: unknown): UserProfile | null {
     firstName,
     lastName:
       typeof candidate.lastName === 'string' ? candidate.lastName : undefined,
+    address:
+      typeof candidate.address === 'string' ? candidate.address : undefined,
     countryCode:
       typeof candidate.countryCode === 'string'
         ? candidate.countryCode

@@ -1,12 +1,16 @@
 'use client'
 
-import {
-  LoaderCircle,
-  ShieldAlert,
-  ShieldCheck,
-  X,
-} from 'lucide-react'
+import { LoaderCircle, ShieldAlert, ShieldCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 export const COUNTRY_OPTIONS = [
   { code: 'BD', name: 'Bangladesh', dial: '+880' },
@@ -64,7 +68,10 @@ export const asMoney = (amount: number, currency: string) => {
   }
 }
 
-export const bySortOrder = (a: { sortOrder: number; price: number }, b: { sortOrder: number; price: number }) => {
+export const bySortOrder = (
+  a: { sortOrder: number; price: number },
+  b: { sortOrder: number; price: number },
+) => {
   if (a.sortOrder !== b.sortOrder) {
     return a.sortOrder - b.sortOrder
   }
@@ -168,33 +175,30 @@ export function PreferenceToggle({
   )
 }
 
-export function Modal({ open, title, subtitle, onClose, children }: ModalProps) {
-  if (!open) {
-    return null
-  }
-
+export function Modal({
+  open,
+  title,
+  subtitle,
+  onClose,
+  children,
+}: ModalProps) {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/45 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-            {subtitle ? (
-              <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-200 p-1.5 text-slate-500 transition hover:bg-slate-100"
-            aria-label="Close modal"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose()
+        }
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {subtitle ? <DialogDescription>{subtitle}</DialogDescription> : null}
+        </DialogHeader>
         <div className="px-5 py-4">{children}</div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -207,5 +211,43 @@ export function StatusIcon({ enabled }: { enabled: boolean }) {
     <ShieldCheck className="size-3.5" />
   ) : (
     <ShieldAlert className="size-3.5" />
+  )
+}
+
+export function SettingsPageHeader({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <header className="space-y-2">
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+        {title}
+      </h2>
+      <p className="max-w-3xl text-sm leading-6 text-slate-600">
+        {description}
+      </p>
+    </header>
+  )
+}
+
+export function SettingsCard({
+  className,
+  children,
+}: {
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <article
+      className={cn(
+        'rounded-xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6',
+        className,
+      )}
+    >
+      {children}
+    </article>
   )
 }

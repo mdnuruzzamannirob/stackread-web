@@ -1,7 +1,13 @@
 'use client'
 
-import { Fingerprint, KeyRound, RefreshCcw, ShieldEllipsis } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+  Fingerprint,
+  KeyRound,
+  LockKeyhole,
+  Mail,
+  ShieldEllipsis,
+} from 'lucide-react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '@/lib/api/error-message'
@@ -15,30 +21,99 @@ import {
   useSendTwoFactorSetupEmailOtpMutation,
   useVerifyTwoFactorMutation,
 } from '@/store/features/auth/authApi'
+import type { LoginHistoryRow } from '@/store/features/auth/types'
 
 import {
   BusyIcon,
   Modal,
-  SectionTitle,
-  StatusIcon,
+  SettingsCard,
+  SettingsPageHeader,
 } from '@/components/settings/SettingsShared'
 
 type SetupMethod = 'app' | 'email'
 
 const formatHistoryDate = (value: string) => {
   const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString()
+}
 
-  if (Number.isNaN(parsed.getTime())) {
-    return value
-  }
+const getBrowserFromUserAgent = (userAgent: string) => {
+  const ua = userAgent.toLowerCase()
+  if (ua.includes('edg/')) return 'Edge'
+  if (ua.includes('opr/') || ua.includes('opera')) return 'Opera'
+  if (ua.includes('chrome/')) return 'Chrome'
+  if (ua.includes('firefox/')) return 'Firefox'
+  if (ua.includes('safari/') && !ua.includes('chrome/')) return 'Safari'
+  return 'Browser'
+}
 
-  return parsed.toLocaleString()
+const getDeviceFromUserAgent = (userAgent: string) => {
+  const ua = userAgent.toLowerCase()
+  if (ua.includes('iphone')) return 'iPhone'
+  if (ua.includes('ipad')) return 'iPad'
+  if (ua.includes('android'))
+    return ua.includes('mobile') ? 'Android Phone' : 'Android Tablet'
+  if (ua.includes('macintosh') || ua.includes('mac os')) return 'Mac'
+  if (ua.includes('windows')) return 'Windows PC'
+  if (ua.includes('linux')) return 'Linux'
+  return 'Unknown Device'
+}
+
+const resolveDeviceBrowserLabel = (entry: LoginHistoryRow) => {
+  if (entry.device || entry.browser)
+    return [entry.device, entry.browser].filter(Boolean).join(' | ')
+  if (!entry.userAgent) return 'Unknown Device | Browser'
+  return `${getDeviceFromUserAgent(entry.userAgent)} | ${getBrowserFromUserAgent(entry.userAgent)}`
+}
+
+const resolveStatusLabel = (status: LoginHistoryRow['status']) =>
+  status === 'current' ? 'Current Session' : 'Successful'
+
+function SecurityFeatureRow({
+  icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  disabled,
+  danger,
+}: {
+  icon: ReactNode
+  title: string
+  description: string
+  actionLabel: string
+  onAction: () => void
+  disabled?: boolean
+  danger?: boolean
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-[#f6f8fa] px-4 py-3">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 rounded-md bg-white p-2 text-slate-600 ring-1 ring-slate-200">
+          {icon}
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{title}</p>
+          <p className="text-xs text-slate-500">{description}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onAction}
+        disabled={disabled}
+        className={`text-sm font-semibold transition ${danger ? 'text-red-700 hover:text-red-800' : 'text-brand-700 hover:text-brand-800'} disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        {actionLabel}
+      </button>
+    </div>
+  )
 }
 
 export default function SecurityPage() {
   const { data: meResponse } = useMeQuery()
   const { data: loginHistoryResponse, isFetching: isLoadingHistory } =
     useLoginHistoryQuery()
+
   const [changeMyPassword, { isLoading: isUpdatingPassword }] =
     useChangeMyPasswordMutation()
   const [enableTwoFactor, { isLoading: isGeneratingTwoFactor }] =
@@ -52,16 +127,15 @@ export default function SecurityPage() {
   const [regenerateBackupCodes, { isLoading: isRegeneratingBackupCodes }] =
     useRegenerateBackupCodesMutation()
 
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
   const [showEnableTwoFactorModal, setShowEnableTwoFactorModal] =
     useState(false)
   const [showDisableTwoFactorModal, setShowDisableTwoFactorModal] =
     useState(false)
   const [showBackupCodesModal, setShowBackupCodesModal] = useState(false)
-
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
 
   const [setupMethod, setSetupMethod] = useState<SetupMethod>('app')
   const [setupOtp, setSetupOtp] = useState('')
@@ -85,42 +159,32 @@ export default function SecurityPage() {
   const loginHistory = loginHistoryResponse?.data ?? []
 
   const qrImageSrc = useMemo(() => {
-    if (!generatedTwoFactorData?.qrCodeUrl) {
-      return ''
-    }
-
+    if (!generatedTwoFactorData?.qrCodeUrl) return ''
     if (generatedTwoFactorData.qrCodeUrl.startsWith('otpauth://')) {
       return `https://chart.googleapis.com/chart?chs=256x256&cht=qr&chl=${encodeURIComponent(generatedTwoFactorData.qrCodeUrl)}`
     }
-
     return generatedTwoFactorData.qrCodeUrl
   }, [generatedTwoFactorData?.qrCodeUrl])
 
   const handlePasswordChange = async () => {
-    if (!currentPassword || !newPassword) {
-      toast.error('Current and new password are required.')
-      return
-    }
-
-    if (newPassword.length < 8) {
-      toast.error('New password must be at least 8 characters.')
-      return
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match.')
-      return
-    }
+    if (!currentPassword.trim() || !newPassword.trim())
+      return toast.error('Current and new password are required.')
+    if (newPassword.trim().length < 8)
+      return toast.error('New password must be at least 8 characters.')
+    if (newPassword !== confirmPassword)
+      return toast.error('New password and confirmation do not match.')
 
     try {
-      await changeMyPassword({ currentPassword, newPassword }).unwrap()
+      await changeMyPassword({
+        currentPassword: currentPassword.trim(),
+        newPassword: newPassword.trim(),
+      }).unwrap()
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      setShowPasswordModal(false)
-      toast.success('Password changed successfully.')
+      toast.success('Password updated successfully.')
     } catch (error) {
-      toast.error(getApiErrorMessage(error, 'Unable to change password.'))
+      toast.error(getApiErrorMessage(error, 'Unable to update password.'))
     }
   }
 
@@ -138,28 +202,14 @@ export default function SecurityPage() {
     }
   }
 
-  const handleSendSetupEmailOtp = async () => {
-    try {
-      await sendSetupEmailOtp().unwrap()
-      toast.success('2FA setup OTP sent to your email.')
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, 'Unable to send email OTP.'))
-    }
-  }
-
   const handleVerifyTwoFactor = async () => {
     const otp = setupOtp.trim()
     const emailOtp = setupEmailOtp.trim()
 
-    if (setupMethod === 'app' && !/^\d{6}$/.test(otp)) {
-      toast.error('Please enter a valid 6-digit authenticator OTP.')
-      return
-    }
-
-    if (setupMethod === 'email' && !/^\d{6}$/.test(emailOtp)) {
-      toast.error('Please enter a valid 6-digit email OTP.')
-      return
-    }
+    if (setupMethod === 'app' && !/^\d{6}$/.test(otp))
+      return toast.error('Please enter a valid 6-digit authenticator OTP.')
+    if (setupMethod === 'email' && !/^\d{6}$/.test(emailOtp))
+      return toast.error('Please enter a valid 6-digit email OTP.')
 
     try {
       await verifyTwoFactor(
@@ -176,15 +226,10 @@ export default function SecurityPage() {
   }
 
   const handleDisableTwoFactor = async () => {
-    if (!disableOtp.trim() && !disablePassword.trim()) {
-      toast.error('Provide OTP or current password to disable 2FA.')
-      return
-    }
-
-    if (disableOtp.trim() && !/^\d{6}$/.test(disableOtp.trim())) {
-      toast.error('OTP must be 6 digits.')
-      return
-    }
+    if (!disableOtp.trim() && !disablePassword.trim())
+      return toast.error('Provide OTP or current password to disable 2FA.')
+    if (disableOtp.trim() && !/^\d{6}$/.test(disableOtp.trim()))
+      return toast.error('OTP must be 6 digits.')
 
     try {
       await disableTwoFactor({
@@ -201,22 +246,18 @@ export default function SecurityPage() {
   }
 
   const handleRegenerateBackupCodes = async () => {
-    if (!backupCodeOtp.trim() && !backupCodePassword.trim()) {
-      toast.error('Provide OTP or current password to regenerate backup codes.')
-      return
-    }
-
-    if (backupCodeOtp.trim() && !/^\d{6}$/.test(backupCodeOtp.trim())) {
-      toast.error('OTP must be 6 digits.')
-      return
-    }
+    if (!backupCodeOtp.trim() && !backupCodePassword.trim())
+      return toast.error(
+        'Provide OTP or current password to regenerate backup codes.',
+      )
+    if (backupCodeOtp.trim() && !/^\d{6}$/.test(backupCodeOtp.trim()))
+      return toast.error('OTP must be 6 digits.')
 
     try {
       const response = await regenerateBackupCodes({
         otp: backupCodeOtp.trim() || undefined,
         currentPassword: backupCodePassword.trim() || undefined,
       }).unwrap()
-
       setLatestBackupCodes(response.data.backupCodes)
       setBackupCodeOtp('')
       setBackupCodePassword('')
@@ -228,183 +269,184 @@ export default function SecurityPage() {
     }
   }
 
+  const handleSendSetupEmailOtp = async () => {
+    try {
+      await sendSetupEmailOtp().unwrap()
+      toast.success('2FA setup OTP sent to your email.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Unable to send email OTP.'))
+    }
+  }
+
   return (
-    <section>
-      <SectionTitle tone="brand" text="Security Protocols" />
-      <article className="space-y-4 p-1 sm:p-2">
-        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-[#c9dcfb] p-2.5 text-[#305ea8]">
-                <KeyRound className="size-4" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-slate-700">
-                  Password Update
-                </p>
-                <p className="text-sm font-medium text-slate-500">
-                  Keep your account secure by updating passwords regularly.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPasswordModal(true)}
-              className="self-start rounded-md border border-slate-300 bg-slate-50 px-4 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-white sm:self-auto"
-            >
-              Update
-            </button>
-          </div>
+    <section className="space-y-6">
+      <SettingsPageHeader
+        title="Security Protocols"
+        description="Manage your credentials and advanced access controls to secure your manuscript collections."
+      />
+
+      <SettingsCard className="space-y-4">
+        <div className="flex items-center gap-2 text-brand-700">
+          <KeyRound className="size-4" />
+          <h3 className="text-base font-semibold">Update Password</h3>
         </div>
-
-        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-[#bfeff4] p-2.5 text-[#1b7f89]">
-                <Fingerprint className="size-4" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-slate-700">
-                  Two-factor Authentication
-                </p>
-                <p
-                  className={`inline-flex items-center gap-1 text-sm font-semibold ${
-                    twoFactorEnabled ? 'text-emerald-700' : 'text-amber-700'
-                  }`}
-                >
-                  <StatusIcon enabled={twoFactorEnabled} />
-                  {twoFactorEnabled ? 'Enabled and Protected' : 'Disabled'}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {twoFactorEnabled ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLatestBackupCodes(null)
-                      setShowBackupCodesModal(true)
-                    }}
-                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-slate-50 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white"
-                  >
-                    <RefreshCcw className="size-3.5" />
-                    Backup Codes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowDisableTwoFactorModal(true)}
-                    className="self-start rounded-md border border-red-300 bg-red-50 px-4 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 sm:self-auto"
-                  >
-                    Disable 2FA
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void handleGenerateTwoFactor()}
-                  disabled={isGeneratingTwoFactor}
-                  className="inline-flex self-start items-center gap-2 rounded-md border border-slate-300 bg-slate-50 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto"
-                >
-                  {isGeneratingTwoFactor ? <BusyIcon /> : null}
-                  Enable 2FA
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <ShieldEllipsis className="size-4 text-slate-500" />
-            <h3 className="text-lg font-semibold text-slate-700">
-              Login History
-            </h3>
-          </div>
-
-          {isLoadingHistory ? (
-            <div className="space-y-2">
-              <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-              <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-              <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-            </div>
-          ) : loginHistory.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No recent login history found.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {loginHistory.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="rounded-md px-3 py-2 text-sm ring-1 ring-slate-200"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-medium text-slate-700">
-                      {entry.ipAddress || 'Unknown IP'}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {formatHistoryDate(entry.createdAt)}
-                    </p>
-                  </div>
-                  <p className="mt-1 line-clamp-1 text-xs text-slate-500">
-                    {entry.userAgent || 'Unknown device'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </article>
-
-      <Modal
-        open={showPasswordModal}
-        title="Change Password"
-        subtitle="Update your password to keep your account secure."
-        onClose={() => setShowPasswordModal(false)}
-      >
-        <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-3">
           <input
             type="password"
             placeholder="Current password"
             value={currentPassword}
-            onChange={(event) => setCurrentPassword(event.target.value)}
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
             placeholder="New password"
             value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
-            placeholder="Confirm new password"
+            placeholder="Confirm password"
             value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
         </div>
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setShowPasswordModal(false)}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-          >
-            Cancel
-          </button>
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={() => void handlePasswordChange()}
             disabled={isUpdatingPassword}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-[#0f8596] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isUpdatingPassword ? <BusyIcon /> : null}
-            Save Password
+            {isUpdatingPassword ? <BusyIcon /> : null}Update Password
           </button>
         </div>
-      </Modal>
+      </SettingsCard>
+
+      <SettingsCard className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">
+              Two-Factor Authentication
+            </h3>
+            <p className="text-sm text-slate-500">
+              Add an extra layer of security to your account.
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${twoFactorEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}
+          >
+            {twoFactorEnabled ? 'Enabled' : 'Disabled'}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <SecurityFeatureRow
+            icon={<Fingerprint className="size-4" />}
+            title="Authenticator App (TOTP)"
+            description="Use an authenticator app for verification."
+            actionLabel={twoFactorEnabled ? 'Manage' : 'Enable'}
+            onAction={() => {
+              if (twoFactorEnabled) {
+                setShowDisableTwoFactorModal(true)
+                return
+              }
+              void handleGenerateTwoFactor()
+            }}
+            disabled={isGeneratingTwoFactor}
+          />
+          <SecurityFeatureRow
+            icon={<Mail className="size-4" />}
+            title="Email Fallback"
+            description={`Fallback verification to ${meResponse?.data.email ?? 'your email'}`}
+            actionLabel="Manage"
+            onAction={() =>
+              toast.message(
+                'Email fallback is automatically available with account email and OTP delivery.',
+              )
+            }
+          />
+          <SecurityFeatureRow
+            icon={<LockKeyhole className="size-4" />}
+            title="Recovery Codes"
+            description="Single-use codes for account recovery."
+            actionLabel="Regenerate"
+            onAction={() => {
+              if (!twoFactorEnabled)
+                return toast.error(
+                  'Enable 2FA before regenerating backup codes.',
+                )
+              setLatestBackupCodes(null)
+              setShowBackupCodesModal(true)
+            }}
+            danger
+          />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard className="space-y-4">
+        <div className="flex items-center gap-2">
+          <ShieldEllipsis className="size-4 text-brand-700" />
+          <h3 className="text-lg font-semibold text-slate-800">
+            Recent Logins
+          </h3>
+        </div>
+        {isLoadingHistory ? (
+          <div className="space-y-2">
+            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+          </div>
+        ) : loginHistory.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No recent login history found.
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                    Date & Time
+                  </th>
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                    Device / Browser
+                  </th>
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                    Location
+                  </th>
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {loginHistory.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="px-4 py-2">
+                      {formatHistoryDate(entry.createdAt)}
+                    </td>
+                    <td className="px-4 py-2">
+                      {resolveDeviceBrowserLabel(entry)}
+                    </td>
+                    <td className="px-4 py-2">
+                      {entry.location || entry.ipAddress || 'Unknown'}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${entry.status === 'current' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}
+                      >
+                        {resolveStatusLabel(entry.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SettingsCard>
 
       <Modal
         open={showEnableTwoFactorModal}
@@ -415,9 +457,6 @@ export default function SecurityPage() {
         {generatedTwoFactorData ? (
           <div className="space-y-4">
             <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                QR Setup
-              </p>
               <div className="mt-2 flex justify-center">
                 {qrImageSrc ? (
                   <img
@@ -435,73 +474,36 @@ export default function SecurityPage() {
                 Secret: {generatedTwoFactorData.secret}
               </p>
             </div>
-
-            <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-              <p className="text-sm font-semibold text-slate-700">
-                Backup Codes
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Store these safely. Each code can be used once.
-              </p>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {generatedTwoFactorData.backupCodes.map((code) => (
-                  <div
-                    key={code}
-                    className="rounded-md bg-white px-2 py-1 text-center text-xs font-semibold text-slate-700 ring-1 ring-slate-200"
-                  >
-                    {code}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setSetupMethod('app')}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                  setupMethod === 'app'
-                    ? 'bg-brand-700 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${setupMethod === 'app' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
                 Authenticator App
               </button>
               <button
                 type="button"
                 onClick={() => setSetupMethod('email')}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                  setupMethod === 'email'
-                    ? 'bg-brand-700 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${setupMethod === 'email' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
                 Email OTP
               </button>
             </div>
-
             {setupMethod === 'app' ? (
-              <div>
-                <label className="text-sm font-semibold text-slate-700">
-                  Authenticator OTP
-                </label>
-                <input
-                  value={setupOtp}
-                  onChange={(event) => setSetupOtp(event.target.value)}
-                  placeholder="6-digit code"
-                  className="mt-1 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
-                />
-              </div>
+              <input
+                value={setupOtp}
+                onChange={(e) => setSetupOtp(e.target.value)}
+                placeholder="6-digit app OTP"
+                className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+              />
             ) : (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Email OTP
-                </label>
                 <input
                   value={setupEmailOtp}
-                  onChange={(event) => setSetupEmailOtp(event.target.value)}
-                  placeholder="6-digit code"
-                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+                  onChange={(e) => setSetupEmailOtp(e.target.value)}
+                  placeholder="6-digit email OTP"
+                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
                 />
                 <button
                   type="button"
@@ -509,8 +511,8 @@ export default function SecurityPage() {
                   disabled={isSendingSetupEmailOtp}
                   className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700"
                 >
-                  {isSendingSetupEmailOtp ? <BusyIcon /> : null}
-                  Send OTP To Email
+                  {isSendingSetupEmailOtp ? <BusyIcon /> : null}Send OTP To
+                  Email
                 </button>
               </div>
             )}
@@ -518,7 +520,6 @@ export default function SecurityPage() {
         ) : (
           <p className="text-sm text-slate-500">Generate setup first.</p>
         )}
-
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
@@ -531,10 +532,9 @@ export default function SecurityPage() {
             type="button"
             onClick={() => void handleVerifyTwoFactor()}
             disabled={!generatedTwoFactorData || isVerifyingTwoFactor}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isVerifyingTwoFactor ? <BusyIcon /> : null}
-            Verify & Enable
+            {isVerifyingTwoFactor ? <BusyIcon /> : null}Verify & Enable
           </button>
         </div>
       </Modal>
@@ -542,22 +542,22 @@ export default function SecurityPage() {
       <Modal
         open={showDisableTwoFactorModal}
         title="Disable 2FA"
-        subtitle="Provide OTP or your current password to disable 2FA."
+        subtitle="Provide OTP or current password to disable 2FA."
         onClose={() => setShowDisableTwoFactorModal(false)}
       >
         <div className="space-y-3">
           <input
             value={disableOtp}
-            onChange={(event) => setDisableOtp(event.target.value)}
+            onChange={(e) => setDisableOtp(e.target.value)}
             placeholder="OTP (optional if password provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
             value={disablePassword}
-            onChange={(event) => setDisablePassword(event.target.value)}
+            onChange={(e) => setDisablePassword(e.target.value)}
             placeholder="Current password (optional if OTP provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div className="mt-4 flex justify-end gap-2">
@@ -572,35 +572,33 @@ export default function SecurityPage() {
             type="button"
             onClick={() => void handleDisableTwoFactor()}
             disabled={isDisablingTwoFactor}
-            className="inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isDisablingTwoFactor ? <BusyIcon /> : null}
-            Disable 2FA
+            {isDisablingTwoFactor ? <BusyIcon /> : null}Disable 2FA
           </button>
         </div>
       </Modal>
 
       <Modal
         open={showBackupCodesModal}
-        title="Backup Codes"
+        title="Recovery Codes"
         subtitle="Regenerate backup codes using OTP or current password."
         onClose={() => setShowBackupCodesModal(false)}
       >
         <div className="space-y-3">
           <input
             value={backupCodeOtp}
-            onChange={(event) => setBackupCodeOtp(event.target.value)}
+            onChange={(e) => setBackupCodeOtp(e.target.value)}
             placeholder="OTP (optional if password provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
             value={backupCodePassword}
-            onChange={(event) => setBackupCodePassword(event.target.value)}
+            onChange={(e) => setBackupCodePassword(e.target.value)}
             placeholder="Current password (optional if OTP provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
-
           {latestBackupCodes?.length ? (
             <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
               <p className="mb-2 text-sm font-semibold text-slate-700">
@@ -619,7 +617,6 @@ export default function SecurityPage() {
             </div>
           ) : null}
         </div>
-
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
@@ -632,10 +629,9 @@ export default function SecurityPage() {
             type="button"
             onClick={() => void handleRegenerateBackupCodes()}
             disabled={isRegeneratingBackupCodes}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isRegeneratingBackupCodes ? <BusyIcon /> : null}
-            Regenerate Codes
+            {isRegeneratingBackupCodes ? <BusyIcon /> : null}Regenerate Codes
           </button>
         </div>
       </Modal>

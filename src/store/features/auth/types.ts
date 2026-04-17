@@ -3,6 +3,7 @@ export type UserProfile = {
   firstName: string
   lastName?: string
   email: string
+  address?: string
   countryCode?: string
   phone?: string
   profilePicture?: string
@@ -79,5 +80,9 @@ export type LoginHistoryRow = {
   id: string
   ipAddress?: string
   userAgent?: string
+  browser?: string
+  device?: string
+  location?: string
+  status: 'current' | 'successful'
   createdAt: string
 }
