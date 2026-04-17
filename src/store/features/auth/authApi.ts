@@ -159,18 +159,20 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth'],
     }),
-    enableTwoFactor: builder.mutation<ApiEnvelope<TwoFactorSetupPayload>, void>(
-      {
-        query: () => ({
-          url: '/auth/2fa/enable',
-          method: 'POST',
-        }),
-        invalidatesTags: ['Auth'],
-      },
-    ),
+    enableTwoFactor: builder.mutation<
+      ApiEnvelope<TwoFactorSetupPayload>,
+      { currentPassword: string }
+    >({
+      query: (body) => ({
+        url: '/auth/2fa/enable',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
     verifyTwoFactor: builder.mutation<
       ApiEnvelope<SuccessResponse>,
-      { otp?: string; emailOtp?: string }
+      { currentPassword: string; otp?: string; emailOtp?: string }
     >({
       query: (body) => ({
         url: '/auth/2fa/verify',
@@ -181,7 +183,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
     disableTwoFactor: builder.mutation<
       ApiEnvelope<SuccessResponse>,
-      { otp?: string; currentPassword?: string }
+      { currentPassword: string; otp?: string }
     >({
       query: (body) => ({
         url: '/auth/2fa/disable',
@@ -192,7 +194,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
     regenerateBackupCodes: builder.mutation<
       ApiEnvelope<{ backupCodes: string[] }>,
-      { otp?: string; currentPassword?: string }
+      { currentPassword: string; otp?: string }
     >({
       query: (body) => ({
         url: '/auth/2fa/backup-codes/regenerate',
@@ -227,9 +229,15 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
     }),
-    loginHistory: builder.query<ApiEnvelope<LoginHistoryRow[]>, void>({
-      query: () => ({
-        url: '/auth/me/login-history',
+    loginHistory: builder.query<
+      ApiEnvelope<LoginHistoryRow[]>,
+      { limit?: number } | void
+    >({
+      query: (params) => ({
+        url:
+          typeof params === 'object' && typeof params?.limit === 'number'
+            ? `/auth/me/login-history?limit=${encodeURIComponent(String(params.limit))}`
+            : '/auth/me/login-history',
         method: 'GET',
       }),
       providesTags: ['Auth'],

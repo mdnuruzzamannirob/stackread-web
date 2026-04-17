@@ -6,6 +6,7 @@ import {
   LockKeyhole,
   Mail,
   ShieldEllipsis,
+  ShieldOff,
 } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -29,8 +30,15 @@ import {
   SettingsCard,
   SettingsPageHeader,
 } from '@/components/settings/SettingsShared'
+import Image from 'next/image'
 
-type SetupMethod = 'app' | 'email'
+type TwoFactorSetupData = {
+  secret: string
+  qrCodeUrl: string
+  backupCodes: string[]
+}
+
+const RECENT_LOGINS_LIMIT = 8
 
 const formatHistoryDate = (value: string) => {
   const parsed = new Date(value)
@@ -112,7 +120,7 @@ function SecurityFeatureRow({
 export default function SecurityPage() {
   const { data: meResponse } = useMeQuery()
   const { data: loginHistoryResponse, isFetching: isLoadingHistory } =
-    useLoginHistoryQuery()
+    useLoginHistoryQuery({ limit: RECENT_LOGINS_LIMIT })
 
   const [changeMyPassword, { isLoading: isUpdatingPassword }] =
     useChangeMyPasswordMutation()
@@ -131,25 +139,24 @@ export default function SecurityPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  const [showEnableTwoFactorModal, setShowEnableTwoFactorModal] =
-    useState(false)
+  const [showTotpSetupModal, setShowTotpSetupModal] = useState(false)
+  const [showEmailSetupModal, setShowEmailSetupModal] = useState(false)
   const [showDisableTwoFactorModal, setShowDisableTwoFactorModal] =
     useState(false)
   const [showBackupCodesModal, setShowBackupCodesModal] = useState(false)
 
-  const [setupMethod, setSetupMethod] = useState<SetupMethod>('app')
-  const [setupOtp, setSetupOtp] = useState('')
-  const [setupEmailOtp, setSetupEmailOtp] = useState('')
-  const [generatedTwoFactorData, setGeneratedTwoFactorData] = useState<{
-    secret: string
-    qrCodeUrl: string
-    backupCodes: string[]
-  } | null>(null)
+  const [totpPassword, setTotpPassword] = useState('')
+  const [totpOtp, setTotpOtp] = useState('')
+  const [totpSetupData, setTotpSetupData] = useState<TwoFactorSetupData | null>(
+    null,
+  )
 
-  const [disableOtp, setDisableOtp] = useState('')
+  const [emailSetupPassword, setEmailSetupPassword] = useState('')
+  const [emailSetupOtp, setEmailSetupOtp] = useState('')
+  const [isEmailSetupStarted, setIsEmailSetupStarted] = useState(false)
+
   const [disablePassword, setDisablePassword] = useState('')
 
-  const [backupCodeOtp, setBackupCodeOtp] = useState('')
   const [backupCodePassword, setBackupCodePassword] = useState('')
   const [latestBackupCodes, setLatestBackupCodes] = useState<string[] | null>(
     null,
@@ -159,12 +166,25 @@ export default function SecurityPage() {
   const loginHistory = loginHistoryResponse?.data ?? []
 
   const qrImageSrc = useMemo(() => {
-    if (!generatedTwoFactorData?.qrCodeUrl) return ''
-    if (generatedTwoFactorData.qrCodeUrl.startsWith('otpauth://')) {
-      return `https://chart.googleapis.com/chart?chs=256x256&cht=qr&chl=${encodeURIComponent(generatedTwoFactorData.qrCodeUrl)}`
+    if (!totpSetupData?.qrCodeUrl) return ''
+    if (totpSetupData.qrCodeUrl.startsWith('data:image/')) {
+      return totpSetupData.qrCodeUrl
     }
-    return generatedTwoFactorData.qrCodeUrl
-  }, [generatedTwoFactorData?.qrCodeUrl])
+
+    return ''
+  }, [totpSetupData?.qrCodeUrl])
+
+  const resetTotpSetupState = () => {
+    setTotpPassword('')
+    setTotpOtp('')
+    setTotpSetupData(null)
+  }
+
+  const resetEmailSetupState = () => {
+    setEmailSetupPassword('')
+    setEmailSetupOtp('')
+    setIsEmailSetupStarted(false)
+  }
 
   const handlePasswordChange = async () => {
     if (!currentPassword.trim() || !newPassword.trim())
@@ -188,55 +208,130 @@ export default function SecurityPage() {
     }
   }
 
-  const handleGenerateTwoFactor = async () => {
+  const initializeTwoFactorSetup = async (password: string) => {
+    const response = await enableTwoFactor({
+      currentPassword: password,
+    }).unwrap()
+    return response.data
+  }
+
+  const handleOpenTotpSetup = () => {
+    if (twoFactorEnabled) {
+      setShowDisableTwoFactorModal(true)
+      toast.message('Disable current 2FA first, then set up TOTP.')
+      return
+    }
+
+    resetTotpSetupState()
+    setShowTotpSetupModal(true)
+  }
+
+  const handleOpenEmailSetup = () => {
+    if (twoFactorEnabled) {
+      setShowDisableTwoFactorModal(true)
+      toast.message('Disable current 2FA first, then set up Email OTP.')
+      return
+    }
+
+    resetEmailSetupState()
+    setShowEmailSetupModal(true)
+  }
+
+  const handleStartTotpSetup = async () => {
+    const password = totpPassword.trim()
+
+    if (password.length < 8) {
+      return toast.error('Current password is required to start TOTP setup.')
+    }
+
     try {
-      const response = await enableTwoFactor().unwrap()
-      setGeneratedTwoFactorData(response.data)
-      setSetupMethod('app')
-      setSetupOtp('')
-      setSetupEmailOtp('')
-      setShowEnableTwoFactorModal(true)
-      toast.success('2FA setup generated. Verify with app code or email OTP.')
+      const data = await initializeTwoFactorSetup(password)
+      setTotpSetupData(data)
+      setTotpOtp('')
+      toast.success('TOTP setup initialized. Verify with app OTP to complete.')
     } catch (error) {
-      toast.error(getApiErrorMessage(error, 'Unable to start 2FA setup.'))
+      toast.error(getApiErrorMessage(error, 'Unable to start TOTP setup.'))
     }
   }
 
-  const handleVerifyTwoFactor = async () => {
-    const otp = setupOtp.trim()
-    const emailOtp = setupEmailOtp.trim()
+  const handleCompleteTotpSetup = async () => {
+    const password = totpPassword.trim()
+    const otp = totpOtp.trim()
 
-    if (setupMethod === 'app' && !/^\d{6}$/.test(otp))
+    if (password.length < 8) return toast.error('Current password is required.')
+    if (!totpSetupData)
+      return toast.error('Start TOTP setup first to generate your QR code.')
+    if (!/^\d{6}$/.test(otp))
       return toast.error('Please enter a valid 6-digit authenticator OTP.')
-    if (setupMethod === 'email' && !/^\d{6}$/.test(emailOtp))
+
+    try {
+      await verifyTwoFactor({ currentPassword: password, otp }).unwrap()
+      setShowTotpSetupModal(false)
+      resetTotpSetupState()
+      toast.success('TOTP 2FA enabled successfully.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Unable to complete TOTP setup.'))
+    }
+  }
+
+  const handleStartEmailSetup = async () => {
+    const password = emailSetupPassword.trim()
+
+    if (password.length < 8) {
+      return toast.error('Current password is required to start Email setup.')
+    }
+
+    try {
+      await initializeTwoFactorSetup(password)
+      setIsEmailSetupStarted(true)
+      setEmailSetupOtp('')
+      await sendSetupEmailOtp().unwrap()
+      toast.success('Email setup OTP sent to your account email.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Unable to start Email setup.'))
+    }
+  }
+
+  const handleResendEmailSetupOtp = async () => {
+    if (!isEmailSetupStarted) return toast.error('Start Email setup first.')
+
+    try {
+      await sendSetupEmailOtp().unwrap()
+      toast.success('Email setup OTP sent successfully.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Unable to send email OTP.'))
+    }
+  }
+
+  const handleCompleteEmailSetup = async () => {
+    const password = emailSetupPassword.trim()
+    const emailOtp = emailSetupOtp.trim()
+
+    if (password.length < 8) return toast.error('Current password is required.')
+    if (!isEmailSetupStarted) return toast.error('Start Email setup first.')
+    if (!/^\d{6}$/.test(emailOtp))
       return toast.error('Please enter a valid 6-digit email OTP.')
 
     try {
-      await verifyTwoFactor(
-        setupMethod === 'app' ? { otp } : { emailOtp },
-      ).unwrap()
-      setSetupOtp('')
-      setSetupEmailOtp('')
-      setGeneratedTwoFactorData(null)
-      setShowEnableTwoFactorModal(false)
-      toast.success('2FA enabled successfully.')
+      await verifyTwoFactor({ currentPassword: password, emailOtp }).unwrap()
+      setShowEmailSetupModal(false)
+      resetEmailSetupState()
+      toast.success('Email 2FA enabled successfully.')
     } catch (error) {
-      toast.error(getApiErrorMessage(error, 'Unable to verify 2FA code.'))
+      toast.error(getApiErrorMessage(error, 'Unable to complete Email setup.'))
     }
   }
 
   const handleDisableTwoFactor = async () => {
-    if (!disableOtp.trim() && !disablePassword.trim())
-      return toast.error('Provide OTP or current password to disable 2FA.')
-    if (disableOtp.trim() && !/^\d{6}$/.test(disableOtp.trim()))
-      return toast.error('OTP must be 6 digits.')
+    const password = disablePassword.trim()
+
+    if (password.length < 8)
+      return toast.error('Current password is required to disable 2FA.')
 
     try {
       await disableTwoFactor({
-        otp: disableOtp.trim() || undefined,
-        currentPassword: disablePassword.trim() || undefined,
+        currentPassword: password,
       }).unwrap()
-      setDisableOtp('')
       setDisablePassword('')
       setShowDisableTwoFactorModal(false)
       toast.success('2FA disabled successfully.')
@@ -246,35 +341,23 @@ export default function SecurityPage() {
   }
 
   const handleRegenerateBackupCodes = async () => {
-    if (!backupCodeOtp.trim() && !backupCodePassword.trim())
+    const password = backupCodePassword.trim()
+
+    if (password.length < 8)
       return toast.error(
-        'Provide OTP or current password to regenerate backup codes.',
+        'Current password is required to regenerate backup codes.',
       )
-    if (backupCodeOtp.trim() && !/^\d{6}$/.test(backupCodeOtp.trim()))
-      return toast.error('OTP must be 6 digits.')
 
     try {
       const response = await regenerateBackupCodes({
-        otp: backupCodeOtp.trim() || undefined,
-        currentPassword: backupCodePassword.trim() || undefined,
+        currentPassword: password,
       }).unwrap()
       setLatestBackupCodes(response.data.backupCodes)
-      setBackupCodeOtp('')
-      setBackupCodePassword('')
-      toast.success('Backup codes regenerated successfully.')
+      toast.success('Backup codes generated successfully.')
     } catch (error) {
       toast.error(
         getApiErrorMessage(error, 'Unable to regenerate backup codes.'),
       )
-    }
-  }
-
-  const handleSendSetupEmailOtp = async () => {
-    try {
-      await sendSetupEmailOtp().unwrap()
-      toast.success('2FA setup OTP sent to your email.')
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, 'Unable to send email OTP.'))
     }
   }
 
@@ -332,7 +415,7 @@ export default function SecurityPage() {
               Two-Factor Authentication
             </h3>
             <p className="text-sm text-slate-500">
-              Add an extra layer of security to your account.
+              Setup flows are separated for TOTP, Email OTP, and backup codes.
             </p>
           </div>
           <span
@@ -346,52 +429,60 @@ export default function SecurityPage() {
           <SecurityFeatureRow
             icon={<Fingerprint className="size-4" />}
             title="Authenticator App (TOTP)"
-            description="Use an authenticator app for verification."
-            actionLabel={twoFactorEnabled ? 'Manage' : 'Enable'}
-            onAction={() => {
-              if (twoFactorEnabled) {
-                setShowDisableTwoFactorModal(true)
-                return
-              }
-              void handleGenerateTwoFactor()
-            }}
-            disabled={isGeneratingTwoFactor}
+            description="Setup TOTP only. No email option is shown in this flow."
+            actionLabel={twoFactorEnabled ? 'Switch Method' : 'Setup'}
+            onAction={handleOpenTotpSetup}
+            disabled={isGeneratingTwoFactor || isVerifyingTwoFactor}
           />
           <SecurityFeatureRow
             icon={<Mail className="size-4" />}
-            title="Email Fallback"
-            description={`Fallback verification to ${meResponse?.data.email ?? 'your email'}`}
-            actionLabel="Manage"
-            onAction={() =>
-              toast.message(
-                'Email fallback is automatically available with account email and OTP delivery.',
-              )
-            }
+            title="Email OTP"
+            description={`Setup Email OTP only for ${meResponse?.data.email ?? 'your account email'}.`}
+            actionLabel={twoFactorEnabled ? 'Switch Method' : 'Setup'}
+            onAction={handleOpenEmailSetup}
+            disabled={isGeneratingTwoFactor || isVerifyingTwoFactor}
           />
           <SecurityFeatureRow
             icon={<LockKeyhole className="size-4" />}
-            title="Recovery Codes"
-            description="Single-use codes for account recovery."
-            actionLabel="Regenerate"
+            title="Backup Codes"
+            description="Generate or regenerate recovery codes after password verification."
+            actionLabel="Manage"
             onAction={() => {
               if (!twoFactorEnabled)
-                return toast.error(
-                  'Enable 2FA before regenerating backup codes.',
-                )
+                return toast.error('Enable TOTP or Email OTP 2FA first.')
               setLatestBackupCodes(null)
+              setBackupCodePassword('')
               setShowBackupCodesModal(true)
             }}
             danger
           />
+          {twoFactorEnabled ? (
+            <SecurityFeatureRow
+              icon={<ShieldOff className="size-4" />}
+              title="Disable Two-Factor Authentication"
+              description="Disable all 2FA methods with password verification."
+              actionLabel="Disable"
+              onAction={() => {
+                setDisablePassword('')
+                setShowDisableTwoFactorModal(true)
+              }}
+              danger
+            />
+          ) : null}
         </div>
       </SettingsCard>
 
       <SettingsCard className="space-y-4">
-        <div className="flex items-center gap-2">
-          <ShieldEllipsis className="size-4 text-brand-700" />
-          <h3 className="text-lg font-semibold text-slate-800">
-            Recent Logins
-          </h3>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldEllipsis className="size-4 text-brand-700" />
+            <h3 className="text-lg font-semibold text-slate-800">
+              Recent Logins
+            </h3>
+          </div>
+          <p className="text-xs font-medium text-slate-500">
+            Showing last {RECENT_LOGINS_LIMIT} entries
+          </p>
         </div>
         {isLoadingHistory ? (
           <div className="space-y-2">
@@ -449,19 +540,41 @@ export default function SecurityPage() {
       </SettingsCard>
 
       <Modal
-        open={showEnableTwoFactorModal}
-        title="Enable 2FA"
-        subtitle="Scan QR and verify by authenticator app or email OTP."
-        onClose={() => setShowEnableTwoFactorModal(false)}
+        open={showTotpSetupModal}
+        title="Setup TOTP 2FA"
+        subtitle="TOTP-only flow. Password verification is required before completion."
+        onClose={() => {
+          setShowTotpSetupModal(false)
+          resetTotpSetupState()
+        }}
       >
-        {generatedTwoFactorData ? (
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <input
+            type="password"
+            value={totpPassword}
+            onChange={(event) => setTotpPassword(event.target.value)}
+            placeholder="Current password"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+          />
+
+          <button
+            type="button"
+            onClick={() => void handleStartTotpSetup()}
+            disabled={isGeneratingTwoFactor}
+            className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+          >
+            {isGeneratingTwoFactor ? <BusyIcon /> : null}Generate QR & Secret
+          </button>
+
+          {totpSetupData ? (
             <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
               <div className="mt-2 flex justify-center">
                 {qrImageSrc ? (
-                  <img
+                  <Image
                     src={qrImageSrc}
                     alt="2FA QR code"
+                    width={176}
+                    height={176}
                     className="size-44 rounded-lg bg-white p-2 ring-1 ring-slate-200"
                   />
                 ) : (
@@ -471,67 +584,106 @@ export default function SecurityPage() {
                 )}
               </div>
               <p className="mt-3 break-all text-xs font-medium text-slate-500">
-                Secret: {generatedTwoFactorData.secret}
+                Secret: {totpSetupData.secret}
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setSetupMethod('app')}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${setupMethod === 'app' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-              >
-                Authenticator App
-              </button>
-              <button
-                type="button"
-                onClick={() => setSetupMethod('email')}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${setupMethod === 'email' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-              >
-                Email OTP
-              </button>
-            </div>
-            {setupMethod === 'app' ? (
-              <input
-                value={setupOtp}
-                onChange={(e) => setSetupOtp(e.target.value)}
-                placeholder="6-digit app OTP"
-                className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-              />
-            ) : (
-              <div className="space-y-2">
-                <input
-                  value={setupEmailOtp}
-                  onChange={(e) => setSetupEmailOtp(e.target.value)}
-                  placeholder="6-digit email OTP"
-                  className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleSendSetupEmailOtp()}
-                  disabled={isSendingSetupEmailOtp}
-                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700"
-                >
-                  {isSendingSetupEmailOtp ? <BusyIcon /> : null}Send OTP To
-                  Email
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">Generate setup first.</p>
-        )}
+          ) : null}
+
+          <input
+            value={totpOtp}
+            onChange={(event) => setTotpOtp(event.target.value)}
+            placeholder="6-digit authenticator OTP"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+          />
+        </div>
+
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
-            onClick={() => setShowEnableTwoFactorModal(false)}
+            onClick={() => {
+              setShowTotpSetupModal(false)
+              resetTotpSetupState()
+            }}
             className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
           >
             Cancel
           </button>
           <button
             type="button"
-            onClick={() => void handleVerifyTwoFactor()}
-            disabled={!generatedTwoFactorData || isVerifyingTwoFactor}
+            onClick={() => void handleCompleteTotpSetup()}
+            disabled={!totpSetupData || isVerifyingTwoFactor}
+            className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {isVerifyingTwoFactor ? <BusyIcon /> : null}Verify & Enable
+          </button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showEmailSetupModal}
+        title="Setup Email OTP 2FA"
+        subtitle="Email-only flow. Password verification is required before completion."
+        onClose={() => {
+          setShowEmailSetupModal(false)
+          resetEmailSetupState()
+        }}
+      >
+        <div className="space-y-4">
+          <input
+            type="password"
+            value={emailSetupPassword}
+            onChange={(event) => setEmailSetupPassword(event.target.value)}
+            placeholder="Current password"
+            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+          />
+
+          <button
+            type="button"
+            onClick={() => void handleStartEmailSetup()}
+            disabled={isGeneratingTwoFactor || isSendingSetupEmailOtp}
+            className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+          >
+            {isGeneratingTwoFactor || isSendingSetupEmailOtp ? (
+              <BusyIcon />
+            ) : null}
+            Start Email Setup
+          </button>
+
+          {isEmailSetupStarted ? (
+            <div className="space-y-2">
+              <input
+                value={emailSetupOtp}
+                onChange={(event) => setEmailSetupOtp(event.target.value)}
+                placeholder="6-digit email OTP"
+                className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+              />
+              <button
+                type="button"
+                onClick={() => void handleResendEmailSetupOtp()}
+                disabled={isSendingSetupEmailOtp}
+                className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+              >
+                {isSendingSetupEmailOtp ? <BusyIcon /> : null}Resend Email OTP
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowEmailSetupModal(false)
+              resetEmailSetupState()
+            }}
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleCompleteEmailSetup()}
+            disabled={!isEmailSetupStarted || isVerifyingTwoFactor}
             className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
             {isVerifyingTwoFactor ? <BusyIcon /> : null}Verify & Enable
@@ -542,21 +694,15 @@ export default function SecurityPage() {
       <Modal
         open={showDisableTwoFactorModal}
         title="Disable 2FA"
-        subtitle="Provide OTP or current password to disable 2FA."
+        subtitle="Password verification is required before disabling 2FA."
         onClose={() => setShowDisableTwoFactorModal(false)}
       >
         <div className="space-y-3">
           <input
-            value={disableOtp}
-            onChange={(e) => setDisableOtp(e.target.value)}
-            placeholder="OTP (optional if password provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-          <input
             type="password"
             value={disablePassword}
-            onChange={(e) => setDisablePassword(e.target.value)}
-            placeholder="Current password (optional if OTP provided)"
+            onChange={(event) => setDisablePassword(event.target.value)}
+            placeholder="Current password"
             className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
         </div>
@@ -581,24 +727,19 @@ export default function SecurityPage() {
 
       <Modal
         open={showBackupCodesModal}
-        title="Recovery Codes"
-        subtitle="Regenerate backup codes using OTP or current password."
+        title="Backup Codes"
+        subtitle="Generate backup codes after password verification."
         onClose={() => setShowBackupCodesModal(false)}
       >
         <div className="space-y-3">
           <input
-            value={backupCodeOtp}
-            onChange={(e) => setBackupCodeOtp(e.target.value)}
-            placeholder="OTP (optional if password provided)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-          <input
             type="password"
             value={backupCodePassword}
-            onChange={(e) => setBackupCodePassword(e.target.value)}
-            placeholder="Current password (optional if OTP provided)"
+            onChange={(event) => setBackupCodePassword(event.target.value)}
+            placeholder="Current password"
             className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
           />
+
           {latestBackupCodes?.length ? (
             <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
               <p className="mb-2 text-sm font-semibold text-slate-700">
@@ -631,7 +772,7 @@ export default function SecurityPage() {
             disabled={isRegeneratingBackupCodes}
             className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isRegeneratingBackupCodes ? <BusyIcon /> : null}Regenerate Codes
+            {isRegeneratingBackupCodes ? <BusyIcon /> : null}Generate Codes
           </button>
         </div>
       </Modal>

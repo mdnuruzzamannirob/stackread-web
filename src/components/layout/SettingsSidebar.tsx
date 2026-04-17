@@ -94,7 +94,7 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
         <div className="relative mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-[#111827]">
           {user?.profilePicture ? (
             <Image
-              src={user.profilePicture}
+              src={user?.profilePicture}
               alt="Profile"
               fill
               sizes="80px"
