@@ -10,7 +10,6 @@ import {
   BusyIcon,
   COUNTRY_OPTIONS,
   createInitialProfileState,
-  isValidUrl,
   type ProfileFormState,
   SectionTitle,
 } from '@/components/settings/SettingsShared'
@@ -36,12 +35,16 @@ export default function ProfilePage() {
       email: user.email ?? '',
       phone: user.phone ?? '',
       countryCode: user.countryCode ?? 'BD',
-      profilePicture: user.profilePicture ?? '',
+      profilePicture: '',
       address: localStorage.getItem('settings:address') ?? '',
     }
 
-    setProfileState(nextState)
-    setInitialProfileState(nextState)
+    const timeoutId = window.setTimeout(() => {
+      setProfileState(nextState)
+      setInitialProfileState(nextState)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [meResponse?.data])
 
   const hasChanges =
@@ -49,7 +52,6 @@ export default function ProfilePage() {
     profileState.lastName !== initialProfileState.lastName ||
     profileState.phone !== initialProfileState.phone ||
     profileState.countryCode !== initialProfileState.countryCode ||
-    profileState.profilePicture !== initialProfileState.profilePicture ||
     profileState.address !== initialProfileState.address
 
   const handleFieldChange = (field: keyof ProfileFormState, value: string) => {
@@ -75,21 +77,12 @@ export default function ProfilePage() {
       return
     }
 
-    if (
-      profileState.profilePicture.trim() &&
-      !isValidUrl(profileState.profilePicture.trim())
-    ) {
-      toast.error('Profile picture must be a valid URL.')
-      return
-    }
-
     try {
       await updateMe({
         firstName: profileState.firstName.trim(),
         lastName: profileState.lastName.trim() || undefined,
         phone: profileState.phone.trim() || undefined,
         countryCode: profileState.countryCode.trim().toUpperCase(),
-        profilePicture: profileState.profilePicture.trim() || undefined,
       }).unwrap()
 
       localStorage.setItem('settings:address', profileState.address.trim())
@@ -103,9 +96,9 @@ export default function ProfilePage() {
   return (
     <section>
       <SectionTitle tone="brand" text="Profile Identity" />
-      <article className="rounded-xl border border-slate-200 bg-[#f9fbfc] p-5 sm:p-6">
+      <article className="p-1 sm:p-2">
         {isLoadingProfile ? (
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             <div className="h-20 animate-pulse rounded-xl bg-slate-200" />
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="h-11 animate-pulse rounded bg-slate-200" />
@@ -115,7 +108,7 @@ export default function ProfilePage() {
             <div className="h-11 animate-pulse rounded bg-slate-200" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1.5 text-sm">
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -177,20 +170,6 @@ export default function ProfilePage() {
                 </select>
               </label>
             </div>
-
-            <label className="block space-y-1.5 text-sm">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Profile Picture URL
-              </span>
-              <input
-                value={profileState.profilePicture}
-                onChange={(event) =>
-                  handleFieldChange('profilePicture', event.target.value)
-                }
-                placeholder="https://example.com/photo.jpg"
-                className="h-11 w-full rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-base font-medium text-slate-700 outline-none transition focus:border-brand-400"
-              />
-            </label>
 
             <label className="block space-y-1.5 text-sm">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">

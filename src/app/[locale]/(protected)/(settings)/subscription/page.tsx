@@ -229,9 +229,9 @@ export default function SubscriptionPage() {
   return (
     <section>
       <SectionTitle tone="brand" text="Subscription" />
-      <article className="rounded-xl border border-slate-200 bg-[#f9fbfc] p-5 sm:p-6">
+      <article className="p-1 sm:p-2">
         {isSubscriptionLoading || isPlansLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
@@ -239,15 +239,15 @@ export default function SubscriptionPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-5 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             {!subscription ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                 <p className="text-sm font-medium text-slate-600">
                   No active or pending subscription found for your account.
                 </p>
               </div>
             ) : (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">

@@ -67,15 +67,15 @@ export default function PreferencesPage() {
   return (
     <section>
       <SectionTitle tone="brand" text="Preferences" />
-      <article className="rounded-xl border border-slate-200 bg-[#f9fbfc] p-5 sm:p-6">
+      <article className="p-1 sm:p-2">
         {isLoadingProfile ? (
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-5 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6">
             <div className="flex items-start justify-between gap-5">
               <div>
                 <p className="text-2xl font-semibold text-slate-700">

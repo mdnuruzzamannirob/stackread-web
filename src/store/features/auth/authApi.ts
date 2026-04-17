@@ -137,6 +137,15 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    sendTwoFactorSetupEmailOtp: builder.mutation<
+      ApiEnvelope<SentResponse>,
+      void
+    >({
+      query: () => ({
+        url: '/auth/2fa/setup/email/send',
+        method: 'POST',
+      }),
+    }),
     challengeTwoFactor: builder.mutation<
       ApiEnvelope<UserSessionPayload>,
       TwoFactorChallengeBody
@@ -159,7 +168,7 @@ export const authApi = baseApi.injectEndpoints({
     ),
     verifyTwoFactor: builder.mutation<
       ApiEnvelope<SuccessResponse>,
-      { otp: string }
+      { otp?: string; emailOtp?: string }
     >({
       query: (body) => ({
         url: '/auth/2fa/verify',
@@ -238,6 +247,17 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Auth'],
     }),
+    updateMyProfilePicture: builder.mutation<
+      ApiEnvelope<UserProfile>,
+      { profilePicture?: string }
+    >({
+      query: (body) => ({
+        url: '/auth/me/profile-picture',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
     changeMyPassword: builder.mutation<ApiEnvelope<null>, ChangePasswordBody>({
       query: (body) => ({
         url: '/auth/me/password',
@@ -269,6 +289,7 @@ export const {
   useVerifyResetOtpMutation,
   useResetPasswordMutation,
   useSendTwoFactorEmailOtpMutation,
+  useSendTwoFactorSetupEmailOtpMutation,
   useChallengeTwoFactorMutation,
   useEnableTwoFactorMutation,
   useVerifyTwoFactorMutation,
@@ -282,6 +303,7 @@ export const {
   useLazyMeQuery,
   useMeQuery,
   useUpdateMeMutation,
+  useUpdateMyProfilePictureMutation,
   useChangeMyPasswordMutation,
   useUpdateMyNotificationPreferencesMutation,
 } = authApi

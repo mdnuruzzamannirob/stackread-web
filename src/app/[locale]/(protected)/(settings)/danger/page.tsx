@@ -12,7 +12,7 @@ export default function DangerPage() {
   return (
     <section>
       <SectionTitle tone="danger" text="Danger Zone" />
-      <article className="rounded-xl border border-red-100 bg-[#fffafb] p-5 sm:p-6">
+      <article className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-red-100 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-2xl font-semibold text-red-700">
