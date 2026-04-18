@@ -11,18 +11,15 @@ import { z } from 'zod'
 import { AuthCard } from '@/components/layout/authCard'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
+import { applyAuthenticatedSession } from '@/lib/auth/client-session'
 import { useRedirectAuthenticated } from '@/lib/auth/guards'
 import { extractLoginPayload } from '@/lib/auth/normalize-auth'
 import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { persistTempToken } from '@/lib/auth/temp-token'
-import { persistSession } from '@/lib/auth/token-storage'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 import { useLoginMutation } from '@/store/features/auth/authApi'
-import {
-  setAuthenticatedSession,
-  setLoginOutcome,
-} from '@/store/features/auth/authSlice'
+import { setLoginOutcome } from '@/store/features/auth/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 const loginSchema = z.object({
@@ -53,11 +50,16 @@ export default function LoginPage() {
   useEffect(() => {
     const error = searchParams.get('error')
     const reset = searchParams.get('reset')
+    const verified = searchParams.get('verified')
 
     if (reset === '1') {
       toast.success(
         'Password reset successful. Please sign in with your new password.',
       )
+    }
+
+    if (verified === '1') {
+      toast.success('Email verified successfully. Please sign in.')
     }
 
     if (error) {
@@ -67,7 +69,10 @@ export default function LoginPage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const response = await login(values).unwrap()
+      const response = await login({
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      }).unwrap()
       const loginPayload = extractLoginPayload(response.data)
 
       if (!loginPayload) {
@@ -82,17 +87,11 @@ export default function LoginPage() {
         return
       }
 
-      persistSession({
+      applyAuthenticatedSession(dispatch, {
         accessToken: loginPayload.accessToken,
         refreshToken: loginPayload.refreshToken,
+        user: loginPayload.user,
       })
-
-      dispatch(
-        setAuthenticatedSession({
-          token: loginPayload.accessToken,
-          user: loginPayload.user,
-        }),
-      )
 
       toast.success('Logged in')
       const destination = await resolveAuthenticatedDestination({

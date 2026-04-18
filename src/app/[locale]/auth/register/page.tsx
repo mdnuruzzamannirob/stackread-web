@@ -10,14 +10,13 @@ import { z } from 'zod'
 import { AuthCard } from '@/components/layout/authCard'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
+import { applyAuthenticatedSession } from '@/lib/auth/client-session'
 import { useRedirectAuthenticated } from '@/lib/auth/guards'
 import { extractRegisterSession } from '@/lib/auth/normalize-auth'
 import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
-import { persistSession } from '@/lib/auth/token-storage'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 import { useRegisterMutation } from '@/store/features/auth/authApi'
-import { setAuthenticatedSession } from '@/store/features/auth/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 const registerSchema = z.object({
@@ -51,7 +50,13 @@ export default function RegisterPage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const response = await register(values).unwrap()
+      const response = await register({
+        firstName: values.firstName.trim(),
+        lastName: values.lastName?.trim() || undefined,
+        email: values.email.trim().toLowerCase(),
+        countryCode: values.countryCode.trim().toUpperCase(),
+        password: values.password,
+      }).unwrap()
       const session = extractRegisterSession(response.data)
 
       if (!session) {
@@ -62,17 +67,11 @@ export default function RegisterPage() {
         return
       }
 
-      persistSession({
+      applyAuthenticatedSession(dispatch, {
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
+        user: session.user,
       })
-
-      dispatch(
-        setAuthenticatedSession({
-          token: session.accessToken,
-          user: session.user,
-        }),
-      )
 
       toast.success('Account created')
       const destination = await resolveAuthenticatedDestination({

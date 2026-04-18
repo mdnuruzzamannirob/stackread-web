@@ -4,9 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { clearSession } from '@/lib/auth/token-storage'
+import { clearClientAuthSession } from '@/lib/auth/client-session'
 import { useLogoutMutation } from '@/store/features/auth/authApi'
-import { clearAuthState } from '@/store/features/auth/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 export function LogoutButton() {
@@ -22,8 +21,7 @@ export function LogoutButton() {
         .unwrap()
         .catch(() => null)
     } finally {
-      clearSession()
-      dispatch(clearAuthState())
+      clearClientAuthSession(dispatch)
       toast.success('Logged out')
       router.replace(`/${locale}/auth/login`)
     }

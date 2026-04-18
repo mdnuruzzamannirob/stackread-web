@@ -2,28 +2,60 @@
 
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { AuthCard } from '@/components/layout/authCard'
 import { Button } from '@/components/ui/button'
 import { getApiErrorMessage } from '@/lib/api/error-message'
+import { applyAuthenticatedSession } from '@/lib/auth/client-session'
 import { useRequireTempToken } from '@/lib/auth/guards'
 import { extractSession } from '@/lib/auth/normalize-auth'
 import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import { clearPersistedTempToken } from '@/lib/auth/temp-token'
-import { persistSession } from '@/lib/auth/token-storage'
+import {
+  extractEmailFromTempToken,
+  getTwoFactorMethodPreference,
+} from '@/lib/auth/two-factor-preferences'
 import {
   useChallengeTwoFactorMutation,
   useSendTwoFactorEmailOtpMutation,
 } from '@/store/features/auth/authApi'
-import {
-  clearTempToken,
-  setAuthenticatedSession,
-} from '@/store/features/auth/authSlice'
+import { clearTempToken } from '@/store/features/auth/authSlice'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 
 type ChallengeMethod = 'authenticator' | 'email' | 'backup'
+
+const methodMeta: Record<
+  ChallengeMethod,
+  { label: string; placeholder: string; helper: string }
+> = {
+  authenticator: {
+    label: 'Authenticator',
+    placeholder: '6-digit authenticator code',
+    helper: 'Enter the code from your authenticator app.',
+  },
+  email: {
+    label: 'Email OTP',
+    placeholder: '6-digit email OTP',
+    helper: 'Use the code we sent to your email address.',
+  },
+  backup: {
+    label: 'Backup Code',
+    placeholder: '8-10 digit backup code',
+    helper: 'Use one of your saved one-time backup codes.',
+  },
+}
+
+const methodPreferenceMap = {
+  totp: 'authenticator',
+  email: 'email',
+  both: null,
+} as const
+
+const sanitizeOtp = (value: string) => value.replace(/\D/g, '').slice(0, 6)
+const sanitizeBackupCode = (value: string) =>
+  value.replace(/\D/g, '').slice(0, 10)
 
 export default function TwoFactorChallengePage() {
   const params = useParams<{ locale: string }>()
@@ -32,8 +64,45 @@ export default function TwoFactorChallengePage() {
   const dispatch = useAppDispatch()
   useRequireTempToken(locale)
 
-  const tempToken = useAppSelector((state) => state.auth.tempToken)
-  const [method, setMethod] = useState<ChallengeMethod>('authenticator')
+  const tempToken =
+    useAppSelector((state) => state.auth.tempToken)?.trim() || null
+
+  const tempTokenEmail = useMemo(() => {
+    if (!tempToken) {
+      return null
+    }
+
+    return extractEmailFromTempToken(tempToken)
+  }, [tempToken])
+
+  const preferredMethod = useMemo(() => {
+    if (!tempTokenEmail) {
+      return null
+    }
+
+    return getTwoFactorMethodPreference(tempTokenEmail)
+  }, [tempTokenEmail])
+
+  const availableMethods = useMemo<ChallengeMethod[]>(() => {
+    if (!preferredMethod || preferredMethod === 'both') {
+      return ['authenticator', 'email', 'backup']
+    }
+
+    const mapped = methodPreferenceMap[preferredMethod]
+
+    if (!mapped) {
+      return ['authenticator', 'email', 'backup']
+    }
+
+    return [mapped, 'backup']
+  }, [preferredMethod])
+
+  const [selectedMethod, setSelectedMethod] = useState<ChallengeMethod>(
+    availableMethods[0] ?? 'authenticator',
+  )
+  const method = availableMethods.includes(selectedMethod)
+    ? selectedMethod
+    : (availableMethods[0] ?? 'authenticator')
   const [authenticatorOtp, setAuthenticatorOtp] = useState('')
   const [emailOtp, setEmailOtp] = useState('')
   const [backupCode, setBackupCode] = useState('')
@@ -58,15 +127,6 @@ export default function TwoFactorChallengePage() {
     }
   }, [emailCooldown])
 
-  useEffect(() => {
-    return () => {
-      if (window.location.pathname.endsWith('/auth/2fa/challenge')) {
-        clearPersistedTempToken()
-        dispatch(clearTempToken())
-      }
-    }
-  }, [dispatch])
-
   const getActiveValue = () => {
     if (method === 'authenticator') {
       return authenticatorOtp.trim()
@@ -83,6 +143,10 @@ export default function TwoFactorChallengePage() {
     const value = getActiveValue()
 
     if (method === 'backup') {
+      if (!/^\d{8,10}$/.test(value)) {
+        throw new Error('Backup code must be 8 to 10 digits.')
+      }
+
       return { backupCode: value }
     }
 
@@ -137,19 +201,11 @@ export default function TwoFactorChallengePage() {
         return
       }
 
-      persistSession({
+      applyAuthenticatedSession(dispatch, {
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
+        user: session.user,
       })
-      clearPersistedTempToken()
-      dispatch(clearTempToken())
-
-      dispatch(
-        setAuthenticatedSession({
-          token: session.accessToken,
-          user: session.user,
-        }),
-      )
 
       toast.success('Two-factor challenge passed')
       const destination = await resolveAuthenticatedDestination({
@@ -173,76 +229,82 @@ export default function TwoFactorChallengePage() {
     router.replace(`/${locale}/auth/login`)
   }
 
+  const activeMethod = methodMeta[method]
+
+  const otpValue = method === 'authenticator' ? authenticatorOtp : emailOtp
+
   return (
     <AuthCard
       title="Verify with 2FA"
       subtitle="Choose a method to complete sign-in."
     >
       <div className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            type="button"
-            variant={method === 'authenticator' ? 'default' : 'outline'}
-            onClick={() => setMethod('authenticator')}
-          >
-            Authenticator
-          </Button>
-          <Button
-            type="button"
-            variant={method === 'email' ? 'default' : 'outline'}
-            onClick={() => setMethod('email')}
-          >
-            Email OTP
-          </Button>
-          <Button
-            type="button"
-            variant={method === 'backup' ? 'default' : 'outline'}
-            onClick={() => setMethod('backup')}
-          >
-            Backup Code
-          </Button>
+        <div
+          className={`grid gap-2 ${availableMethods.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}
+        >
+          {availableMethods.map((item) => (
+            <Button
+              key={item}
+              type="button"
+              variant={method === item ? 'default' : 'outline'}
+              onClick={() => setSelectedMethod(item)}
+            >
+              {methodMeta[item].label}
+            </Button>
+          ))}
         </div>
 
-        {method === 'authenticator' ? (
-          <input
-            value={authenticatorOtp}
-            onChange={(event) => {
-              setAuthenticatorOtp(event.target.value)
-              if (submitError) {
-                setSubmitError(null)
-              }
-            }}
-            className="h-10 w-full rounded-lg border border-input px-3 text-sm"
-            placeholder="6-digit authenticator code"
-          />
+        {preferredMethod && preferredMethod !== 'both' ? (
+          <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Preferred method from your last setup:{' '}
+            {
+              methodMeta[
+                methodPreferenceMap[preferredMethod] ?? 'authenticator'
+              ].label
+            }
+            . Backup codes are always available.
+          </p>
         ) : null}
 
-        {method === 'email' ? (
+        <p className="text-xs text-muted-foreground">{activeMethod.helper}</p>
+
+        {method === 'authenticator' || method === 'email' ? (
           <div className="space-y-2">
             <input
-              value={emailOtp}
+              value={otpValue}
               onChange={(event) => {
-                setEmailOtp(event.target.value)
+                const value = sanitizeOtp(event.target.value)
+
+                if (method === 'authenticator') {
+                  setAuthenticatorOtp(value)
+                } else {
+                  setEmailOtp(value)
+                }
+
                 if (submitError) {
                   setSubmitError(null)
                 }
               }}
-              className="h-10 w-full rounded-lg border border-input px-3 text-sm"
-              placeholder="6-digit email OTP"
+              inputMode="numeric"
+              className="h-10 w-full rounded-lg border border-input px-3 text-center text-sm tracking-[0.3em]"
+              placeholder={activeMethod.placeholder}
             />
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={onSendOtp}
-              disabled={isSending || emailCooldown > 0}
-            >
-              {isSending
-                ? 'Sending...'
-                : emailCooldown > 0
-                  ? `Resend in ${emailCooldown}s`
-                  : 'Send OTP'}
-            </Button>
+
+            {method === 'email' ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={onSendOtp}
+                disabled={isSending || emailCooldown > 0}
+              >
+                {isSending
+                  ? 'Sending...'
+                  : emailCooldown > 0
+                    ? `Resend in ${emailCooldown}s`
+                    : 'Send OTP'}
+              </Button>
+            ) : null}
           </div>
         ) : null}
 
@@ -250,13 +312,14 @@ export default function TwoFactorChallengePage() {
           <input
             value={backupCode}
             onChange={(event) => {
-              setBackupCode(event.target.value)
+              setBackupCode(sanitizeBackupCode(event.target.value))
               if (submitError) {
                 setSubmitError(null)
               }
             }}
-            className="h-10 w-full rounded-lg border border-input px-3 text-sm"
-            placeholder="Enter backup code"
+            inputMode="numeric"
+            className="h-10 w-full rounded-lg border border-input px-3 text-center text-sm tracking-[0.2em]"
+            placeholder={activeMethod.placeholder}
           />
         ) : null}
 

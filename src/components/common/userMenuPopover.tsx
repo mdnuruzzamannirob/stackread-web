@@ -19,9 +19,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { clearSession } from '@/lib/auth/token-storage'
+import { clearClientAuthSession } from '@/lib/auth/client-session'
 import { useLogoutMutation, useMeQuery } from '@/store/features/auth/authApi'
-import { clearAuthState } from '@/store/features/auth/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 const resolveInitials = (
@@ -89,8 +88,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
     } catch (error) {
       toast.error(getApiErrorMessage(error, t('logoutFailed')))
     } finally {
-      clearSession()
-      dispatch(clearAuthState())
+      clearClientAuthSession(dispatch)
       router.replace(`/${locale}/auth/login`)
     }
   }

@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { AuthCard } from '@/components/layout/authCard'
+import { applyAuthenticatedSession } from '@/lib/auth/client-session'
 import { parseOAuthCallbackParams } from '@/lib/auth/normalize-auth'
 import { resolveAuthenticatedDestination } from '@/lib/auth/onboarding'
 import {
@@ -12,7 +13,10 @@ import {
   persistTempToken,
 } from '@/lib/auth/temp-token'
 import { persistSession } from '@/lib/auth/token-storage'
-import { setLoginOutcome } from '@/store/features/auth/authSlice'
+import {
+  clearTempToken,
+  setLoginOutcome,
+} from '@/store/features/auth/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 export default function OAuthCallbackPage() {
@@ -23,8 +27,14 @@ export default function OAuthCallbackPage() {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    const { accessToken, refreshToken, tempToken, requiresTwoFactor, error } =
-      parseOAuthCallbackParams(searchParams)
+    const {
+      accessToken,
+      refreshToken,
+      tempToken,
+      requiresTwoFactor,
+      user,
+      error,
+    } = parseOAuthCallbackParams(searchParams)
 
     if (error) {
       toast.error(error)
@@ -47,14 +57,23 @@ export default function OAuthCallbackPage() {
     }
 
     clearPersistedTempToken()
+    dispatch(clearTempToken())
 
     void (async () => {
       try {
         if (accessToken) {
-          persistSession({
-            accessToken,
-            refreshToken: refreshToken ?? undefined,
-          })
+          if (user) {
+            applyAuthenticatedSession(dispatch, {
+              accessToken,
+              refreshToken: refreshToken ?? undefined,
+              user,
+            })
+          } else {
+            persistSession({
+              accessToken,
+              refreshToken: refreshToken ?? undefined,
+            })
+          }
         }
 
         toast.success('OAuth login successful')
