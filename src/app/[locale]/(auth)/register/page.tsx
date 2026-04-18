@@ -1,7 +1,7 @@
 'use client'
 
 import InputField from '@/components/InputField'
-import { Home, Lock, Mail, Phone, User } from 'lucide-react'
+import { Check, Home, Lock, Mail, Phone, User } from 'lucide-react'
 import { useState } from 'react'
 
 interface FormData {
@@ -16,6 +16,7 @@ interface FormData {
 }
 
 const RegisterPage = () => {
+  const [agreed, setAgreed] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -64,6 +65,8 @@ const RegisterPage = () => {
                   icon={<User size={17} />}
                   type="text"
                   name="firstName"
+                  label="First Name"
+                  required
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleChange}
@@ -72,6 +75,8 @@ const RegisterPage = () => {
                   icon={<User size={17} />}
                   type="text"
                   name="lastName"
+                  label="Last Name"
+                  required
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleChange}
@@ -84,6 +89,8 @@ const RegisterPage = () => {
                   icon={<Mail size={17} />}
                   type="email"
                   name="email"
+                  label="Email Address"
+                  required
                   placeholder="Email Address"
                   value={formData.email}
                   onChange={handleChange}
@@ -96,7 +103,8 @@ const RegisterPage = () => {
                   icon={<Phone size={17} />}
                   type="tel"
                   name="phone"
-                  placeholder="Phone Number (optional)"
+                  label="Phone Number (optional)"
+                  placeholder="+880 1XX-XXXXXXX"
                   value={formData.phone}
                   onChange={handleChange}
                 />
@@ -108,7 +116,8 @@ const RegisterPage = () => {
                   icon={<Home size={17} />}
                   type="text"
                   name="address"
-                  placeholder="Address (optional)"
+                  label="Address (optional)"
+                  placeholder="123 Main Street"
                   value={formData.address}
                   onChange={handleChange}
                 />
@@ -120,7 +129,9 @@ const RegisterPage = () => {
                   icon={<Lock size={17} />}
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  label="Password"
+                  required
+                  placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
                 />
@@ -132,36 +143,49 @@ const RegisterPage = () => {
                   icon={<Lock size={17} />}
                   type="password"
                   name="confirmPassword"
-                  placeholder="Confirm Password"
+                  label="Confirm Password"
+                  required
+                  placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
               </div>
 
               {/* Terms Checkbox */}
-              <div className="flex items-start gap-2 mb-5 mt-1">
-                <input
-                  type="checkbox"
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  checked={formData.agreeTerms}
-                  onChange={handleChange}
-                  className="mt-0.5 w-4 h-4 accent-teal-700 cursor-pointer"
-                />
-                <label
-                  htmlFor="agreeTerms"
-                  className="text-sm text-gray-500 leading-relaxed"
+              <div
+                className="flex items-start gap-3 mb-5 cursor-pointer select-none"
+                onClick={() => setAgreed((v) => !v)}
+              >
+                <div
+                  className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all duration-150 ${
+                    agreed
+                      ? 'bg-teal-700 border-teal-700'
+                      : 'bg-white border-gray-300 hover:border-teal-500'
+                  }`}
                 >
+                  {agreed && (
+                    <Check size={12} strokeWidth={3} className="text-white" />
+                  )}
+                </div>
+                <span className="text-sm text-gray-500 leading-relaxed">
                   I agree to the{' '}
-                  <a href="#" className="text-teal-700 hover:underline">
+                  <a
+                    href="#"
+                    className="text-teal-700 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     Terms of Service
                   </a>{' '}
                   and{' '}
-                  <a href="#" className="text-teal-700 hover:underline">
+                  <a
+                    href="#"
+                    className="text-teal-700 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     Privacy Policy
                   </a>
                   .
-                </label>
+                </span>
               </div>
 
               {/* Submit Button */}
