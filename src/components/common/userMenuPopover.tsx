@@ -97,7 +97,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <button
           type="button"
           className="inline-flex h-10 max-w-56 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2.5 text-left text-neutral-700 transition hover:border-brand-300 hover:text-brand-600"
