@@ -1,7 +1,7 @@
 'use client'
 
 import AuthHeroSection from '@/components/auth/AuthHeroSection'
-import { Lock, Mail, Shield } from 'lucide-react'
+import { Circle, CircleDot, Lock, Mail, Shield } from 'lucide-react'
 import Link from 'next/link'
 
 const TwoFactorAuthentication = () => {
@@ -29,7 +29,7 @@ const TwoFactorAuthentication = () => {
             <div className="space-y-3">
               <Link
                 href="/login/2fa/totp"
-                className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
+                className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
                   <Shield
@@ -37,6 +37,7 @@ const TwoFactorAuthentication = () => {
                     className="group-hover:text-white duration-150 transition-colors"
                   />
                 </div>
+
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-700 transition-colors">
                     Authenticator App
@@ -45,11 +46,23 @@ const TwoFactorAuthentication = () => {
                     Generate codes via Google or Microsoft
                   </p>
                 </div>
+
+                {/* Radio Indicator */}
+                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
+                  <Circle
+                    size={18}
+                    className="text-gray-400 transition-all duration-150 group-hover:opacity-0"
+                  />
+                  <CircleDot
+                    size={18}
+                    className="absolute inset-0 text-teal-600 opacity-0 transition-all duration-150 group-hover:opacity-100"
+                  />
+                </div>
               </Link>
 
               <Link
                 href="/login/2fa/email"
-                className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
+                className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
                   <Mail
@@ -57,6 +70,7 @@ const TwoFactorAuthentication = () => {
                     className="group-hover:text-white duration-150 transition-colors"
                   />
                 </div>
+
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-700 transition-colors">
                     Email OTP
@@ -65,11 +79,23 @@ const TwoFactorAuthentication = () => {
                     One-time code sent to your inbox
                   </p>
                 </div>
+
+                {/* Radio Indicator */}
+                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
+                  <Circle
+                    size={18}
+                    className="text-gray-400 transition-all duration-150 group-hover:opacity-0"
+                  />
+                  <CircleDot
+                    size={18}
+                    className="absolute inset-0 text-teal-600 opacity-0 transition-all duration-150 group-hover:opacity-100"
+                  />
+                </div>
               </Link>
 
               <Link
                 href="/login/2fa/recovery"
-                className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
+                className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
                   <Lock
@@ -77,6 +103,7 @@ const TwoFactorAuthentication = () => {
                     className="group-hover:text-white duration-150 transition-colors"
                   />
                 </div>
+
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-700 transition-colors">
                     Backup Codes
@@ -84,6 +111,18 @@ const TwoFactorAuthentication = () => {
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">
                     Use a pre-generated offline code
                   </p>
+                </div>
+
+                {/* Radio Indicator */}
+                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
+                  <Circle
+                    size={18}
+                    className="text-gray-400 transition-all duration-150 group-hover:opacity-0"
+                  />
+                  <CircleDot
+                    size={18}
+                    className="absolute inset-0 text-teal-600 opacity-0 transition-all duration-150 group-hover:opacity-100"
+                  />
                 </div>
               </Link>
             </div>
