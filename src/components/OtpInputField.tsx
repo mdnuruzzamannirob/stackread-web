@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 
 interface OtpInputProps {
   length?: number
+  autoFocus?: boolean
+  disabled?: boolean
+  error?: boolean
+  value?: string
   onChange?: (value: string) => void
   onComplete?: (value: string) => void
 }
@@ -12,6 +16,10 @@ const OTP_LENGTH_DEFAULT = 6
 
 const OtpInputField = ({
   length = OTP_LENGTH_DEFAULT,
+  autoFocus = true,
+  disabled = false,
+  error = false,
+  value: externalValue,
   onChange,
   onComplete,
 }: OtpInputProps) => {
@@ -21,18 +29,25 @@ const OtpInputField = ({
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
   const isProgrammaticFocus = useRef(false)
 
+
+  useEffect(() => {
+    if (externalValue === undefined) return
+    const digits = externalValue.replace(/\D/g, '').slice(0, length).split('')
+    setOtp(Array.from({ length }, (_, i) => digits[i] ?? ''))
+  }, [externalValue, length])
+
   const value = otp.join('')
 
   useEffect(() => {
     onChange?.(value)
-    if (value.length === length && otp.every((digit) => digit !== '')) {
+    if (value.length === length && otp.every((d) => d !== '')) {
       onComplete?.(value)
     }
   }, [length, onChange, onComplete, otp, value])
 
   useEffect(() => {
-    inputRefs.current[0]?.focus()
-  }, [])
+    if (autoFocus) inputRefs.current[0]?.focus()
+  }, [autoFocus])
 
   const focusIndex = (index: number) => {
     isProgrammaticFocus.current = true
@@ -40,9 +55,7 @@ const OtpInputField = ({
   }
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!isProgrammaticFocus.current) {
-      e.target.select()
-    }
+    if (!isProgrammaticFocus.current) e.target.select()
     isProgrammaticFocus.current = false
   }
 
@@ -62,42 +75,33 @@ const OtpInputField = ({
       return
     }
 
-    // multi-digit paste via onChange (e.g. autofill)
     if (digits.length > 1) {
       setOtp((prev) => {
         const next = [...prev]
-        const merged = digits.slice(0, length)
-        for (let position = 0; position < merged.length; position += 1) {
-          next[index + position] = merged[position]
-        }
+        digits
+          .slice(0, length)
+          .split('')
+          .forEach((d, i) => {
+            if (index + i < length) next[index + i] = d
+          })
         return next
       })
-      const nextFocusIndex = Math.min(index + digits.length, length - 1)
-      focusIndex(nextFocusIndex)
+      focusIndex(Math.min(index + digits.length, length - 1))
       return
     }
 
-    // ✅ single digit — always set & advance
-    // (same-digit case is handled in handleKeyDown,
-    //  but this still runs for different digits)
     setDigitAtIndex(index, digits)
-    if (index < length - 1) {
-      focusIndex(index + 1)
-    }
+    if (index < length - 1) focusIndex(index + 1)
   }
 
   const handleKeyDown = (
     index: number,
     event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    // ✅ FIX: digit key pressed on an already-filled cell
-    // onChange won't fire if the value is identical, so we handle it here
     if (/^\d$/.test(event.key) && otp[index] !== '') {
       event.preventDefault()
-      setDigitAtIndex(index, event.key) // update (may be same or different digit)
-      if (index < length - 1) {
-        focusIndex(index + 1)
-      }
+      setDigitAtIndex(index, event.key)
+      if (index < length - 1) focusIndex(index + 1)
       return
     }
 
@@ -124,13 +128,28 @@ const OtpInputField = ({
     }
   }
 
+  const handleBeforeInput = (
+    index: number,
+    event: React.FormEvent<HTMLInputElement> & { data?: string | null },
+  ) => {
+    const char = event.data ?? ''
+    if (!/^\d$/.test(char)) return
+
+
+    if (otp[index] !== '') {
+      event.preventDefault()
+      setDigitAtIndex(index, char)
+      if (index < length - 1) focusIndex(index + 1)
+    }
+
+  }
+
   const handlePaste = (
     index: number,
     event: React.ClipboardEvent<HTMLInputElement>,
   ) => {
     event.preventDefault()
     const pastedValue = event.clipboardData.getData('text').replace(/\D/g, '')
-
     if (!pastedValue) return
 
     setOtp((prev) => {
@@ -138,64 +157,69 @@ const OtpInputField = ({
       pastedValue
         .slice(0, length - index)
         .split('')
-        .forEach((digit, offset) => {
-          next[index + offset] = digit
+        .forEach((d, i) => {
+          next[index + i] = d
         })
       return next
     })
-
-    const nextIndex = Math.min(index + pastedValue.length, length - 1)
-    focusIndex(nextIndex)
+    focusIndex(Math.min(index + pastedValue.length, length - 1))
   }
+
+  const groupSize = 3
+  const groups: number[][] = []
+  for (let i = 0; i < length; i += groupSize) {
+    groups.push(
+      Array.from({ length: Math.min(groupSize, length - i) }, (_, j) => i + j),
+    )
+  }
+
+
+  const inputClass = [
+    'h-11 w-11 sm:h-12 sm:w-12 rounded-lg border bg-gray-50 text-center',
+    'text-base sm:text-lg font-semibold tracking-widest outline-none',
+    'transition-all duration-150',
+    error
+      ? 'border-red-400 text-red-600 focus:border-red-500 focus:ring-[2.5px] focus:ring-red-500/10'
+      : 'border-gray-200 text-gray-800 focus:border-teal-600 focus:bg-white focus:ring-[2.5px] focus:ring-teal-600/10',
+    disabled ? 'cursor-not-allowed opacity-50 bg-gray-100' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div className="flex items-center justify-center gap-3 xs:gap-4 sm:gap-6">
-      {/* First group */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <input
-            key={index}
-            ref={(element) => {
-              inputRefs.current[index] = element
-            }}
-            value={otp[index]}
-            onChange={(event) => handleChange(index, event.target.value)}
-            onKeyDown={(event) => handleKeyDown(index, event)}
-            onPaste={(event) => handlePaste(index, event)}
-            onFocus={handleFocus}
-            inputMode="numeric"
-            autoComplete={index === 0 ? 'one-time-code' : 'off'}
-            maxLength={1}
-            aria-label={`OTP digit ${index + 1}`}
-            className="h-11 w-11 sm:h-12 sm:w-12 rounded-lg border border-gray-200 bg-gray-50 text-center text-base sm:text-lg font-semibold tracking-widest text-gray-800 outline-none transition-all duration-150 focus:border-teal-600 focus:bg-white focus:ring-[2.5px] focus:ring-teal-600/10"
-          />
-        ))}
-      </div>
-
-      {/* Second group */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {Array.from({ length: 3 }).map((_, i) => {
-          const index = i + 3
-          return (
+      {groups.map((group, groupIndex) => (
+        <div
+          key={groupIndex}
+          className="grid gap-2 sm:gap-3"
+          style={{
+            gridTemplateColumns: `repeat(${group.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {group.map((index) => (
             <input
               key={index}
-              ref={(element) => {
-                inputRefs.current[index] = element
+              ref={(el) => {
+                inputRefs.current[index] = el
               }}
               value={otp[index]}
-              onChange={(event) => handleChange(index, event.target.value)}
-              onKeyDown={(event) => handleKeyDown(index, event)}
-              onPaste={(event) => handlePaste(index, event)}
-              onFocus={handleFocus}
+              type="tel"
               inputMode="numeric"
-              autoComplete="off"
-              maxLength={1}
+              autoComplete={index === 0 ? 'one-time-code' : 'off'}
+              maxLength={length}
+              disabled={disabled}
               aria-label={`OTP digit ${index + 1}`}
-              className="h-11 w-11 sm:h-12 sm:w-12 rounded-lg border border-gray-200 bg-gray-50 text-center text-base sm:text-lg font-semibold tracking-widest text-gray-800 outline-none transition-all duration-150 focus:border-teal-600 focus:bg-white focus:ring-[2.5px] focus:ring-teal-600/10"
+              aria-invalid={error}
+              onChange={(e) => handleChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              onBeforeInput={(e) => handleBeforeInput(index, e )}
+              onPaste={(e) => handlePaste(index, e)}
+              onFocus={handleFocus}
+              className={inputClass}
             />
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      ))}
     </div>
   )
 }
