@@ -1,9 +1,9 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import OtpInputField from '@/components/OtpInputField'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
 const RESEND_SECONDS = 30
 
@@ -29,12 +29,11 @@ const VerifyEmail = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1563552671-12d1a8e1e4ba?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-teal-700"
           title="Verify your email."
           description="Confirm your email address to activate your StackRead account."
         />
 
-        <section className="ml-[50%] flex min-h-dvh w-1/2 items-center justify-center overflow-y-auto bg-white">
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">

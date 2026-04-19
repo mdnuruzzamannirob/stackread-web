@@ -1,21 +1,20 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import { Lock, Mail, Shield } from 'lucide-react'
 import Link from 'next/link'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
-const ChooseVerificationPage = () => {
+const TwoFactorAuthentication = () => {
   return (
     <main className="min-h-dvh flex flex-col">
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1614064641938-3bbee52b8d25?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-teal-700"
           title="Security Layer"
           description="Protecting Your Universal Library."
         />
 
-        <section className="ml-[50%] flex min-h-dvh w-1/2 items-center justify-center overflow-y-auto bg-white">
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">
@@ -29,7 +28,7 @@ const ChooseVerificationPage = () => {
 
             <form className="space-y-3">
               <Link
-                href="/verify-authenticator"
+                href="/login/2fa/totp"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
@@ -49,7 +48,7 @@ const ChooseVerificationPage = () => {
               </Link>
 
               <Link
-                href="/verify-email-2fa"
+                href="/login/2fa/email"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
@@ -66,7 +65,7 @@ const ChooseVerificationPage = () => {
               </Link>
 
               <Link
-                href="/verify-backup-code"
+                href="/login/2fa/recovery"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
                 <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
@@ -98,4 +97,4 @@ const ChooseVerificationPage = () => {
   )
 }
 
-export default ChooseVerificationPage
+export default TwoFactorAuthentication

@@ -37,7 +37,7 @@ export default async function ProtectedLayout({
   }
 
   if (onboarding?.status === 'pending' || onboarding?.status === 'selected') {
-    redirect(`/${locale}/onboarding/plan-selection`)
+    redirect(`/${locale}/onboarding/plan`)
   }
 
   return (

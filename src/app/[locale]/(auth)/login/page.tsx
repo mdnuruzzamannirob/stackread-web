@@ -1,10 +1,10 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import InputField from '@/components/InputField'
 import { Check, Lock, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
 interface FormData {
   email: string
@@ -39,12 +39,12 @@ const LoginPage = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1507842872343-583f20270319?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-slate-900"
           title="Reconnect with the world's wisdom."
           description="Access the universal library and uncover ideas that shape the future."
         />
 
-        <section className="ml-[50%] flex min-h-dvh w-1/2 items-center justify-center overflow-y-auto bg-white">
+        {/* Right */}
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">

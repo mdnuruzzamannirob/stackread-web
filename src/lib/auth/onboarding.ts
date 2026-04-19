@@ -59,7 +59,7 @@ export function resolvePostAuthDestination({
   onboardingStatus: AuthState['onboardingStatus'] | null
 }) {
   if (onboardingStatus === 'pending' || onboardingStatus === 'selected') {
-    return `/${locale}/onboarding/plan-selection`
+    return `/${locale}/onboarding/plan`
   }
 
   return `/${locale}/dashboard`
@@ -75,7 +75,7 @@ export async function resolveAuthenticatedDestination({
   const onboardingStatus = await fetchOnboardingStatus(accessToken)
 
   if (onboardingStatus === 'pending' || onboardingStatus === 'selected') {
-    return `/${locale}/onboarding/plan-selection`
+    return `/${locale}/onboarding/plan`
   }
 
   const me = await fetchMe(accessToken)

@@ -1,10 +1,10 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import InputField from '@/components/InputField'
 import { Check, Home, Lock, Mail, Phone, User } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
 interface FormData {
   firstName: string
@@ -48,13 +48,12 @@ const RegisterPage = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-slate-900"
           title="Start your reading journey."
           description="Join millions of readers discovering knowledge in the world's largest digital library."
         />
 
-        {/* Right - scrollable */}
-        <section className="w-1/2 ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
+        {/* Right */}
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full rounded-xl max-w-lg px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">

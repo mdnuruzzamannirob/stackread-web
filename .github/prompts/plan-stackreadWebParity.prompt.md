@@ -82,7 +82,7 @@ Deliver full user-portal parity in stackread-web against the existing stackread-
 - `stackread-web/src/components/modules/dashboard/bookRecommendations.tsx` — wire recommendations endpoint.
 - `stackread-web/src/components/modules/dashboard/topicsGrid.tsx` — source categories/taxonomy-driven topics.
 - `stackread-web/src/app/[locale]/(public)/page.tsx` — replace hardcoded marketing content with backend-driven sections.
-- `stackread-web/src/app/[locale]/onboarding/plan-selection/page.tsx` and `stackread-web/src/app/[locale]/payment/success/page.tsx` — coupon and payment reconciliation updates.
+- `stackread-web/src/app/[locale]/onboarding/plan/page.tsx` and `stackread-web/src/app/[locale]/payment/success/page.tsx` — coupon and payment reconciliation updates.
 - `stackread-web/src/messages/en.json` and `stackread-web/src/messages/bn.json` — localization coverage for all new flows.
 
 **Verification**

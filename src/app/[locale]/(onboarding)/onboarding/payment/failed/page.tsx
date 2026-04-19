@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation'
 import { AuthCard } from '@/components/layout/authCard'
 import { Button } from '@/components/ui/button'
 
-export default function OnboardingCancelPage() {
+export default function OnboardingPaymentFailedPage() {
   const t = useTranslations('onboarding.cancel')
   const params = useParams<{ locale: string }>()
   const locale = params.locale ?? 'en'

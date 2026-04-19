@@ -1,10 +1,10 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import InputField from '@/components/InputField'
 import { Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('')
@@ -14,12 +14,11 @@ const ForgotPasswordPage = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1526374965328-7f5ae4e8a83f?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-slate-900"
           title="Recover your account."
           description="We'll help you regain access to your StackRead library securely."
         />
 
-        <section className="ml-[50%] flex min-h-dvh w-1/2 items-center justify-center overflow-y-auto bg-white">
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">

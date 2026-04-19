@@ -1,12 +1,12 @@
 'use client'
 
+import AuthHeroSection from '@/components/auth/AuthHeroSection'
 import InputField from '@/components/InputField'
 import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
-import AuthHeroSection from '../../../../components/auth/AuthHeroSection'
 
-const VerifyBackupCodePage = () => {
+const TwoFactorAuthenticationRecovery = () => {
   const [code, setCode] = useState('')
 
   return (
@@ -14,12 +14,11 @@ const VerifyBackupCodePage = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthHeroSection
           backgroundImage="https://images.unsplash.com/photo-1620714223084-8fcabc6413cc?w=1200&h=1600&fit=crop"
-          backgroundColor="bg-teal-700"
           title="Secure Your Knowledge"
           description="One more step to protect your digital archive."
         />
 
-        <section className="ml-[50%] flex min-h-dvh w-1/2 items-center justify-center overflow-y-auto bg-white">
+        <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex items-center justify-center bg-white overflow-y-auto">
           <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
             <div className="mb-8 space-y-2">
               <h1 className="text-2xl font-semibold sm:text-3xl">
@@ -60,7 +59,7 @@ const VerifyBackupCodePage = () => {
               <p className="mt-4 text-center text-sm text-gray-500">
                 Don&apos;t have a backup code?{' '}
                 <Link
-                  href="/choose-verification"
+                  href="/login/2fa"
                   className="font-medium text-teal-700 hover:underline"
                 >
                   Try another method
@@ -74,4 +73,4 @@ const VerifyBackupCodePage = () => {
   )
 }
 
-export default VerifyBackupCodePage
+export default TwoFactorAuthenticationRecovery

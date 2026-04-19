@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useTranslations } from 'next-intl'
@@ -13,7 +14,7 @@ import {
   useLazyGetOnboardingStatusQuery,
 } from '@/store/features/onboarding/onboardingApi'
 
-export default function OnboardingSuccessPage() {
+export default function OnboardingPaymentSuccessPage() {
   const t = useTranslations('onboarding.success')
   const params = useParams<{ locale: string }>()
   const locale = params.locale ?? 'en'
