@@ -26,15 +26,15 @@ const TwoFactorAuthentication = () => {
               </p>
             </div>
 
-            <form className="space-y-3">
+            <div className="space-y-3">
               <Link
                 href="/login/2fa/totp"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
+                <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
                   <Shield
                     size={20}
-                    className="text-teal-700 transition-colors"
+                    className="group-hover:text-white duration-150 transition-colors"
                   />
                 </div>
                 <div className="flex-1">
@@ -51,8 +51,11 @@ const TwoFactorAuthentication = () => {
                 href="/login/2fa/email"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
-                  <Mail size={20} className="text-teal-700 transition-colors" />
+                <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
+                  <Mail
+                    size={20}
+                    className="group-hover:text-white duration-150 transition-colors"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-700 transition-colors">
@@ -68,8 +71,11 @@ const TwoFactorAuthentication = () => {
                 href="/login/2fa/recovery"
                 className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
               >
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-teal-100 to-teal-50 transition-all group-hover:from-teal-200 group-hover:to-teal-100">
-                  <Lock size={20} className="text-teal-700 transition-colors" />
+                <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
+                  <Lock
+                    size={20}
+                    className="group-hover:text-white duration-150 transition-colors"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-700 transition-colors">
@@ -80,7 +86,7 @@ const TwoFactorAuthentication = () => {
                   </p>
                 </div>
               </Link>
-            </form>
+            </div>
 
             <p className="mt-8 text-center text-sm text-gray-500">
               <Link
