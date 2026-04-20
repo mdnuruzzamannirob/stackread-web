@@ -1,5 +1,132 @@
-const OnboardingLanguagePage = () => {
-  return <div>OnboardingLanguagePage</div>
-}
+'use client'
 
-export default OnboardingLanguagePage
+import { Check, Globe2, Languages } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { cn } from '@/lib/utils'
+
+const storageKey = 'stackread:onboarding-language'
+
+const languageOptions = [
+  {
+    code: 'en',
+    label: 'English',
+    description:
+      'Curated recommendations, onboarding copy, and reading cues in English.',
+    icon: Languages,
+  },
+  {
+    code: 'bn',
+    label: 'বাংলা',
+    description: 'A Bengali-first reading preference for local discovery.',
+    icon: Globe2,
+  },
+] as const
+
+export default function OnboardingLanguagePage() {
+  const params = useParams<{ locale: string }>()
+  const locale = params.locale ?? 'en'
+  const router = useRouter()
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'bn'>(() => {
+    if (typeof window === 'undefined') {
+      return 'en'
+    }
+
+    const stored = window.localStorage.getItem(storageKey)
+    if (stored === 'en' || stored === 'bn') {
+      return stored
+    }
+
+    const browserLanguage = window.navigator.language.toLowerCase()
+    return browserLanguage.startsWith('bn') ? 'bn' : 'en'
+  })
+
+  const continueToNextStep = () => {
+    window.localStorage.setItem(storageKey, selectedLanguage)
+    router.push(`/${locale}/onboarding/plan`)
+  }
+  const persistAndBack = () => {
+    window.localStorage.setItem(storageKey, JSON.stringify(selectedLanguage))
+    router.push(`/${locale}/onboarding/interests`)
+  }
+
+  return (
+    <OnboardingShell
+      stepLabel="Step 3 of 5"
+      progress={{ current: 3, total: 5 }}
+      title="Pick your reading language"
+      subtitle="Choose the language that feels most natural for your reading journey. You can revisit this later in settings."
+      footer={
+        <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={persistAndBack}
+            className="rounded-lg font-medium hover:bg-teal-100 px-6 py-2.5 transition-all duration-150 hover:text-teal-600"
+          >
+            Back
+          </button>
+
+          <button
+            type="button"
+            className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+            onClick={continueToNextStep}
+          >
+            Continue
+          </button>
+        </div>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        {languageOptions.map((option) => {
+          const Icon = option.icon
+          const isSelected = selectedLanguage === option.code
+
+          return (
+            <button
+              key={option.code}
+              type="button"
+              onClick={() => setSelectedLanguage(option.code)}
+              className={cn(
+                'group relative min-h-36 flex flex-col text-start gap-4 rounded-xl border-2 px-4 py-5 transition-all duration-150',
+                isSelected
+                  ? 'border-teal-600 bg-teal-50'
+                  : 'border-gray-100 bg-gray-50 hover:bg-teal-50 hover:border-teal-600',
+              )}
+            >
+              {isSelected ? (
+                <span className="absolute right-4 top-4 inline-flex size-6 items-center justify-center rounded-full bg-teal-600 text-white ">
+                  <Check className="size-3.5" />
+                </span>
+              ) : (
+                <span className=" duration-150 transition-all absolute right-4 top-4 size-6 rounded-full border-gray-200 group-hover:border-teal-600 border-2 text-white "></span>
+              )}
+
+              <span
+                className={cn(
+                  'inline-flex size-12 items-center justify-center rounded-md group-hover:bg-teal-100 transition-all duration-150 bg-gray-200  group-hover:text-teal-600',
+                  isSelected && 'bg-teal-100 text-teal-600',
+                )}
+              >
+                <Icon className="size-6" />
+              </span>
+
+              <div className="space-y-2">
+                <h2
+                  className={cn(
+                    'font-medium group-hover:text-teal-600 transition-all duration-150',
+                    isSelected && 'text-teal-600',
+                  )}
+                >
+                  {option.label}
+                </h2>
+                <p className="text-sm text-slate-500">{option.description}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </OnboardingShell>
+  )
+}
