@@ -77,28 +77,9 @@ export default function OnboardingInterestsPage() {
   return (
     <OnboardingShell
       stepLabel="Step 2 of 5"
-      progress={{ current: 2, total: 5 }}
+      progress={2}
       title="What worlds are you exploring?"
       subtitle="Select your preferred genres to personalize your reading feed. Choose as many as you like to help us tailor recommendations to your unique tastes."
-      footer={
-        <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={persistAndBack}
-            className="rounded-lg font-medium hover:bg-teal-100 px-6 py-2.5 transition-all duration-150 hover:text-teal-600"
-          >
-            Back
-          </button>
-
-          <button
-            type="button"
-            className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
-            onClick={persistAndContinue}
-          >
-            Continue
-          </button>
-        </div>
-      }
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {interestOptions.map((interest) => {
@@ -146,6 +127,24 @@ export default function OnboardingInterestsPage() {
             </button>
           )
         })}
+      </div>
+
+      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          onClick={persistAndBack}
+          className="font-medium px-6 p-2.5 text-teal-600"
+        >
+          Back
+        </button>
+
+        <button
+          type="button"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+          onClick={persistAndContinue}
+        >
+          Continue
+        </button>
       </div>
     </OnboardingShell>
   )

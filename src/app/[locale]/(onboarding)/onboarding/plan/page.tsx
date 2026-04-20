@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/purity */
 'use client'
 
+import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { cn } from '@/lib/utils'
+import { Star } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Star } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
 
 type BillingCycle = 'monthly' | 'annually'
 
@@ -143,23 +144,37 @@ export default function OnboardingPlanSelectionPage() {
     return 'Billed month to month'
   }
 
+  const handlePlanClick = (plan: UiPlan) => {
+    const outcome = Math.random() < 0.5 ? 'success' : 'failed'
+    const price = getPrice(plan)
+    const searchParams = new URLSearchParams({
+      plan_id: plan.code,
+      plan_name: plan.name,
+      billing_cycle: billing,
+      price: price?.toFixed(2) ?? '0.00',
+      currency: 'USD',
+    })
+
+    if (plan.free) {
+      searchParams.set('is_free', 'true')
+    }
+
+    if (outcome === 'failed') {
+      searchParams.set('error_code', 'card_declined')
+      searchParams.set('card_last4', '4242')
+    }
+
+    router.push(
+      `/${locale}/onboarding/payment/${outcome}?${searchParams.toString()}`,
+    )
+  }
+
   return (
     <OnboardingShell
       stepLabel="Step 4 of 5"
-      progress={{ current: 4, total: 5 }}
+      progress={4}
       title="Choose your plan"
       subtitle="Select the plan that fits your reading habits."
-      footer={
-        <div className="mt-10">
-          <button
-            type="button"
-            className="rounded-lg font-medium hover:bg-teal-100 px-6 py-2.5 transition-all duration-150 hover:text-teal-600"
-            onClick={() => router.push(`/${locale}/onboarding/language`)}
-          >
-            Back
-          </button>
-        </div>
-      }
     >
       {/* Billing Toggle */}
       <div className="flex items-center justify-center gap-3 mb-16">
@@ -233,7 +248,6 @@ export default function OnboardingPlanSelectionPage() {
                   </span>
                 ) : (
                   <>
-
                     <span className="text-3xl font-semibold text-gray-900">
                       ${price?.toFixed(2)}
                     </span>
@@ -273,6 +287,7 @@ export default function OnboardingPlanSelectionPage() {
 
               <button
                 type="button"
+                onClick={() => handlePlanClick(plan)}
                 className={cn(
                   'h-10 w-full rounded-lg text-sm font-medium transition-all duration-150',
                   isFeatured
@@ -285,6 +300,16 @@ export default function OnboardingPlanSelectionPage() {
             </div>
           )
         })}
+      </div>
+
+      <div className="flex justify-center">
+        <button
+          type="button"
+          className="font-medium px-6 py-2.5 text-teal-600"
+          onClick={() => router.push(`/${locale}/onboarding/language`)}
+        >
+          Back
+        </button>
       </div>
     </OnboardingShell>
   )

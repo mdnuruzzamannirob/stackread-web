@@ -1,8 +1,8 @@
 'use client'
 
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { Book, BookOpen, Layers, Smile, Users, WifiOff } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
-import { Book, Layers, Smile, WifiOff, Users, BookOpen } from 'lucide-react'
 
 const welcomeOptions = [
   { title: '50k+', description: 'Books available', icon: Book },
@@ -24,20 +24,9 @@ const OnboardingWelcomePage = () => {
   return (
     <OnboardingShell
       stepLabel="Step 1 of 5"
-      progress={{ current: 1, total: 5 }}
+      progress={1}
       title="Your library, your world."
       subtitle="Discover books, build your reading list, and track every page of your journey. Setup takes under 2 minutes."
-      footer={
-        <div className="mt-10 flex justify-end">
-          <button
-            type="button"
-            className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white"
-            onClick={persistAndContinue}
-          >
-            Continue
-          </button>
-        </div>
-      }
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {welcomeOptions.map((option, index) => {
@@ -59,6 +48,16 @@ const OnboardingWelcomePage = () => {
             </div>
           )
         })}
+      </div>
+
+      <div className="flex justify-center">
+        <button
+          type="button"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white"
+          onClick={persistAndContinue}
+        >
+          Continue
+        </button>
       </div>
     </OnboardingShell>
   )

@@ -1,209 +1,150 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { BookOpen, CheckCircle2, ChevronRight } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
-
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { BookOpen, Globe2, Layers } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-const uiPlans = [
-  { code: 'free', name: 'Reader Free', billingCycle: 'No recurring billing' },
-  {
-    code: 'premium',
-    name: 'Universal Library Premium',
-    billingCycle: 'Billed monthly',
-  },
-  {
-    code: 'pro',
-    name: 'Universal Library Pro',
-    billingCycle: 'Billed monthly',
-  },
-] as const
+// ─── Storage keys ─────────────────────────────────────────────────────────────
+const INTERESTS_KEY = 'stackread:onboarding-interests'
+const LANGUAGE_KEY = 'stackread:onboarding-language'
 
-export default function OnboardingCompletionPage() {
+// ─── Interest labels ──────────────────────────────────────────────────────────
+const INTEREST_LABELS: Record<string, string> = {
+  fiction: 'Fiction',
+  'non-fiction': 'Non-Fiction',
+  poetry: 'Poetry',
+  history: 'History',
+  science: 'Science',
+  philosophy: 'Philosophy',
+  'art-design': 'Art',
+  technology: 'Tech',
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function readInterests(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(INTERESTS_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    if (Array.isArray(parsed))
+      return parsed.filter((x): x is string => typeof x === 'string')
+  } catch {
+    /* ignore */
+  }
+  return []
+}
+
+function readLanguage(): 'en' | 'bn' {
+  if (typeof window === 'undefined') return 'en'
+  const stored = window.localStorage.getItem(LANGUAGE_KEY)
+  if (stored === 'en' || stored === 'bn') return stored
+  return 'en'
+}
+
+function formatInterests(codes: string[]): string {
+  if (codes.length === 0) return 'None selected'
+  const labels = codes.map((c) => INTEREST_LABELS[c] ?? c)
+  if (labels.length <= 3) return labels.join(', ')
+  return `${labels.slice(0, 2).join(', ')} +${labels.length - 2}`
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default function OnboardingCompletePage() {
   const params = useParams<{ locale: string }>()
-  const locale = params.locale ?? 'en'
+  const locale = params?.locale ?? 'en'
   const router = useRouter()
-  const [selectedPlanCode] = useState(() => {
-    if (typeof window === 'undefined') {
-      return 'premium'
-    }
 
-    return window.localStorage.getItem('stackread:onboarding-plan') ?? 'premium'
-  })
-  const [storedLanguage] = useState(() => {
-    if (typeof window === 'undefined') {
-      return 'English'
-    }
+  const [interests, setInterests] = useState<string[]>([])
+  const [language, setLanguage] = useState<'en' | 'bn'>('en')
 
-    const language = window.localStorage.getItem(
-      'stackread:onboarding-language',
-    )
+  useEffect(() => {
+    setInterests(readInterests())
+    setLanguage(readLanguage())
+  }, [])
 
-    if (language === 'bn') {
-      return 'বাংলা'
-    }
+  // const handleStart = () => {
+  //   window.localStorage.removeItem(INTERESTS_KEY)
+  //   window.localStorage.removeItem(LANGUAGE_KEY)
+  //   router.push(`/${locale}/library`)
+  // }
 
-    return 'English'
-  })
-  const [storedInterests] = useState<string[]>(() => {
-    if (typeof window === 'undefined') {
-      return []
-    }
+  const handleDashboard = () => {
+    window.localStorage.removeItem(INTERESTS_KEY)
+    window.localStorage.removeItem(LANGUAGE_KEY)
+    router.push(`/${locale}/dashboard`)
+  }
 
-    const interests = window.localStorage.getItem(
-      'stackread:onboarding-interests',
-    )
-
-    if (!interests) {
-      return []
-    }
-
-    try {
-      const parsed = JSON.parse(interests) as unknown
-      if (Array.isArray(parsed)) {
-        return parsed.filter((item): item is string => typeof item === 'string')
-      }
-    } catch {
-      window.localStorage.removeItem('stackread:onboarding-interests')
-    }
-
-    return []
-  })
-
-  const selectedPlan =
-    uiPlans.find((plan) => plan.code === selectedPlanCode) ?? uiPlans[1]
-
-  const summaryItems = [
+  const summary = [
     {
+      icon: Globe2,
       label: 'Language',
-      value: storedLanguage,
+      value: language === 'bn' ? 'বাংলা' : 'English',
     },
     {
+      icon: Layers,
       label: 'Interests',
-      value:
-        storedInterests.length > 0
-          ? storedInterests.map((item) => item.replace(/-/g, ' ')).join(', ')
-          : 'Not selected',
+      value: formatInterests(interests),
     },
     {
+      icon: BookOpen,
       label: 'Plan',
-      value: selectedPlan.name,
-    },
-    {
-      label: 'Billing',
-      value: selectedPlan.billingCycle,
+      value: 'Premium Curator',
     },
   ]
-
-  const handleStartReading = () => {
-    router.replace(`/${locale}/dashboard`)
-  }
-
-  const handleGoToPlans = () => {
-    router.push(`/${locale}/onboarding/plan`)
-  }
 
   return (
     <OnboardingShell
       stepLabel="Step 5 of 5"
-      progress={{ current: 5, total: 5 }}
-      title="You're ready to go"
-      subtitle="Your onboarding setup is complete. Your reading experience is now ready."
-      footer={
-        <div className="mt-10">
-          <button
-            type="button"
-            className="rounded-lg font-medium hover:bg-teal-100 px-6 py-2.5 transition-all duration-150 hover:text-teal-600"
-            onClick={() => router.push(`/${locale}/onboarding/language`)}
-          >
-            Back
-          </button>
-        </div>
-      }
-
+      progress={5}
+      title="You're all set."
+      subtitle="Your personalized library is ready. Dive in whenever you are."
     >
-      <div className="mx-auto max-w-2xl">
-        <div
-          className={cn(
-            'rounded-[2rem] border bg-white/90 p-6 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.2)] sm:p-8',
-            'border-teal-100',
-          )}
-        >
-          <div className="flex flex-col items-center text-center">
+      {/* Divider top */}
+      <hr className="border-gray-200" />
+
+      {/* Summary row */}
+      <div className="grid grid-cols-3 gap-6 py-10">
+        {summary.map((item) => {
+          const Icon = item.icon
+          return (
             <div
-              className={cn(
-                'inline-flex size-20 items-center justify-center rounded-[1.75rem] shadow-sm',
-                'bg-teal-50 text-teal-900',
-              )}
+              key={item.label}
+              className="flex flex-col items-center gap-2 text-center"
             >
-              <CheckCircle2 className="size-10" />
+              <Icon className="size-6 text-gray-400" strokeWidth={1.5} />
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                {item.label}
+              </p>
+              <p className="text-base font-medium text-gray-800">
+                {item.value}
+              </p>
             </div>
+          )
+        })}
+      </div>
 
-            <p className="mt-6 text-4xl font-semibold tracking-tight text-slate-900">
-              Onboarding ready
-            </p>
+      {/* Divider bottom */}
+      <hr className="border-gray-200" />
 
-            <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
-              Welcome in. We saved your preferences and prepared your profile.
-            </p>
-          </div>
+      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          onClick={() => router.push(`/${locale}/onboarding/plan`)}
+          className="font-medium px-6 py-2.5 text-teal-600"
+        >
+          Back
+        </button>
 
-          <div className="mt-8 rounded-[1.5rem] border border-slate-100 bg-slate-50/70 p-4 sm:p-5">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-800/80">
-                  Onboarding summary
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Review the selections used to personalize your account.
-                </p>
-              </div>
-              <BookOpen className="size-5 shrink-0 text-teal-900" />
-            </div>
-
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {summaryItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl bg-white px-4 py-3"
-                >
-                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-slate-900">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-teal-50/80 px-4 py-3 text-sm leading-6 text-teal-900">
-              Receipt sent to your email. Your access is active now.
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-            <Button
-              type="button"
-              className="h-12 rounded-full px-8 text-base shadow-[0_18px_30px_-16px_rgba(13,148,136,0.55)]"
-              onClick={handleStartReading}
-            >
-              Start Reading
-              <ChevronRight className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-12 rounded-full px-8 text-base"
-              onClick={handleGoToPlans}
-            >
-              Back to plans
-            </Button>
-          </div>
-        </div>
+        <button
+          type="button"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+          onClick={handleDashboard}
+        >
+          Go to Dashboard
+        </button>
       </div>
     </OnboardingShell>
   )

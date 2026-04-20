@@ -55,28 +55,9 @@ export default function OnboardingLanguagePage() {
   return (
     <OnboardingShell
       stepLabel="Step 3 of 5"
-      progress={{ current: 3, total: 5 }}
+      progress={3}
       title="Pick your reading language"
       subtitle="Choose the language that feels most natural for your reading journey. You can revisit this later in settings."
-      footer={
-        <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={persistAndBack}
-            className="rounded-lg font-medium hover:bg-teal-100 px-6 py-2.5 transition-all duration-150 hover:text-teal-600"
-          >
-            Back
-          </button>
-
-          <button
-            type="button"
-            className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
-            onClick={continueToNextStep}
-          >
-            Continue
-          </button>
-        </div>
-      }
     >
       <div className="grid gap-4 sm:grid-cols-2">
         {languageOptions.map((option) => {
@@ -126,6 +107,24 @@ export default function OnboardingLanguagePage() {
             </button>
           )
         })}
+      </div>
+
+      <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          onClick={persistAndBack}
+          className="font-medium px-6 py-2.5 text-teal-600"
+        >
+          Back
+        </button>
+
+        <button
+          type="button"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+          onClick={continueToNextStep}
+        >
+          Continue
+        </button>
       </div>
     </OnboardingShell>
   )

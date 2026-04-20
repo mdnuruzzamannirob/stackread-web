@@ -147,7 +147,7 @@ export default function OnboardingPaymentSuccessPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownRef.current!)
-          // router.push(`/${locale}/onboarding/complete`)
+          router.push(`/${locale}/onboarding/complete`)
           return 0
         }
         return prev - 1
