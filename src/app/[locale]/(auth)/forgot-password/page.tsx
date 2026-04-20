@@ -63,7 +63,7 @@ const ForgotPasswordPage = () => {
                     href="/login"
                     className="font-medium text-teal-700 hover:underline"
                   >
-                    Sign in
+                    Log in
                   </Link>
                 </p>
               </form>

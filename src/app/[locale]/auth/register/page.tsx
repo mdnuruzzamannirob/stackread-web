@@ -166,7 +166,7 @@ export default function RegisterPage() {
           className="text-primary underline-offset-4 hover:underline"
           href={`/${locale}/auth/login`}
         >
-          Sign in
+          Log in
         </Link>
       </p>
 

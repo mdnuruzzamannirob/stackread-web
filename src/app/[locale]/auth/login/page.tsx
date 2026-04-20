@@ -68,12 +68,12 @@ export default function LoginPage() {
 
     if (reset === '1') {
       toast.success(
-        'Password reset successful. Please sign in with your new password.',
+        'Password reset successful. Please login with your new password.',
       )
     }
 
     if (verified === '1') {
-      toast.success('Email verified successfully. Please sign in.')
+      toast.success('Email verified successfully. Please login.')
     }
 
     if (error) {

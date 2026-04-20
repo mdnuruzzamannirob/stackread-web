@@ -251,7 +251,7 @@ export default function ResetPasswordPage() {
           className="mx-auto flex items-center gap-2 text-sm text-[#184f79] hover:underline"
         >
           <ArrowLeft className="size-4" />
-          Return to Sign In
+          Return to Log In
         </button>
 
         {!resetToken ? (
