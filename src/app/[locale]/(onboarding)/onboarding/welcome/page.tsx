@@ -1,6 +1,6 @@
 'use client'
 
-import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { OnboardingShell } from '@/components/OnboardingShell'
 import { Book, BookOpen, Layers, Smile, Users, WifiOff } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { OnboardingShell } from '@/components/OnboardingShell'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { cn } from '@/lib/utils'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'

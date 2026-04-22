@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { OnboardingShell } from '@/components/OnboardingShell'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
 import { BookOpen, Globe2, Layers } from 'lucide-react'
