@@ -121,6 +121,10 @@ export function resolveOnboardingStepRedirect({
 }) {
   const stage = resolveOnboardingProgressStage(onboarding)
 
+  if (page === 'complete') {
+    return null
+  }
+
   if (stage === 'dashboard') {
     return `/${locale}/dashboard`
   }

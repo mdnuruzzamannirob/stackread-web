@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+
 import { OnboardingShell } from '@/components/OnboardingShell'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { useOnboardingStepGuard } from '@/lib/auth/onboarding-flow'
@@ -38,16 +40,30 @@ export default function OnboardingCompletePage() {
   )
   const [completeOnboarding, { isLoading: isCompleting }] =
     onboardingApi.useCompleteOnboardingMutation()
+  const autoCompleteStartedRef = useRef(false)
 
-  const handleDashboard = () => {
+  useEffect(() => {
+    if (
+      isOnboardingLoading ||
+      autoCompleteStartedRef.current ||
+      onboarding?.status === 'completed'
+    ) {
+      return
+    }
+
+    autoCompleteStartedRef.current = true
+
     void (async () => {
       try {
         await completeOnboarding({ agreeToTerms: true }).unwrap()
-        // router.push(`/${locale}/dashboard`)
       } catch (error) {
         toast.error(getApiErrorMessage(error, 'Unable to complete onboarding.'))
       }
     })()
+  }, [completeOnboarding, isOnboardingLoading, onboarding?.status])
+
+  const handleDashboard = () => {
+    router.push(`/${locale}/dashboard`)
   }
 
   const status = onboarding
