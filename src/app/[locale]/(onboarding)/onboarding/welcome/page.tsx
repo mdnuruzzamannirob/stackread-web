@@ -68,7 +68,7 @@ const OnboardingWelcomePage = () => {
         <button
           type="button"
           disabled={isStarting}
-          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700 disabled:opacity-50 disabled:hover:bg-teal-600 disabled:cursor-not-allowed"
           onClick={persistAndContinue}
         >
           {isStarting ? 'Starting...' : 'Continue'}

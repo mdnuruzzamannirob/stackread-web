@@ -43,7 +43,7 @@ export default function OnboardingCompletePage() {
     void (async () => {
       try {
         await completeOnboarding({ agreeToTerms: true }).unwrap()
-        router.push(`/${locale}/dashboard`)
+        // router.push(`/${locale}/dashboard`)
       } catch (error) {
         toast.error(getApiErrorMessage(error, 'Unable to complete onboarding.'))
       }
@@ -174,7 +174,7 @@ export default function OnboardingCompletePage() {
         <button
           type="button"
           disabled={isCompleting}
-          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700 disabled:opacity-50 disabled:hover:bg-teal-600 disabled:cursor-not-allowed"
           onClick={handleDashboard}
         >
           {isCompleting ? 'Saving...' : 'Go to Dashboard'}

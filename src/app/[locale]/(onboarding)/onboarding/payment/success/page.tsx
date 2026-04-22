@@ -1,29 +1,26 @@
 'use client'
 
 import { getApiErrorMessage } from '@/lib/api/error-message'
+import { cn } from '@/lib/utils'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
-import { CheckCircle2, Loader2, RefreshCw } from 'lucide-react'
+import { ArrowRight, CheckCircle2, LayoutGrid, RefreshCw } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+// ------- types -------
 type VerificationState = 'loading' | 'confirmed' | 'failed'
 
-type SummaryItem = {
+type SummaryRow = {
   label: string
   value: string
+  mono?: boolean
+  highlight?: boolean
 }
 
-function LoadingDots() {
-  return (
-    <span className="inline-flex items-center gap-1.5 align-middle">
-      <span className="size-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.2s]" />
-      <span className="size-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.1s]" />
-      <span className="size-1.5 animate-bounce rounded-full bg-current" />
-    </span>
-  )
-}
+const COUNTDOWN_DURATION = 10 // seconds
 
+// ------- main component -------
 export default function OnboardingPaymentSuccessPage() {
   const params = useParams<{ locale: string }>()
   const locale = (params?.locale === 'bn' ? 'bn' : 'en') as 'en' | 'bn'
@@ -31,8 +28,8 @@ export default function OnboardingPaymentSuccessPage() {
   const searchParams = useSearchParams()
   const [verificationState, setVerificationState] =
     useState<VerificationState>('loading')
-  const [loadingMessage, setLoadingMessage] = useState('Verifying payment')
-  const [countdown, setCountdown] = useState(5)
+  const [loadingMsg, setLoadingMsg] = useState('Verifying your payment')
+  const [countdown, setCountdown] = useState(COUNTDOWN_DURATION)
 
   const [confirmPayment] = onboardingApi.useConfirmOnboardingPaymentMutation()
 
@@ -61,31 +58,41 @@ export default function OnboardingPaymentSuccessPage() {
     })
   }, [billingCycle])
 
-  const summary = useMemo<SummaryItem[]>(
+  const summary = useMemo<SummaryRow[]>(
     () => [
-      { label: 'Plan', value: planName },
-      { label: 'Plan code', value: planId },
+      { label: 'Plan', value: planName, highlight: true },
+      { label: 'Plan code', value: planId, mono: true },
       {
         label: 'Billing cycle',
         value: billingCycle === 'yearly' ? 'Annually' : 'Monthly',
       },
-      { label: 'Amount', value: `${currency} ${price}` },
+      {
+        label: 'Amount charged',
+        value: `${currency} ${price}`,
+        highlight: true,
+      },
       { label: 'Next billing', value: nextBillingDate },
       { label: 'Card', value: `•••• ${cardLast4}` },
     ],
-    [billingCycle, cardLast4, currency, nextBillingDate, planId, planName, price],
+    [
+      billingCycle,
+      cardLast4,
+      currency,
+      nextBillingDate,
+      planId,
+      planName,
+      price,
+    ],
   )
 
   const verifyPayment = useCallback(async () => {
     try {
-      setLoadingMessage('Verifying payment')
-
+      setLoadingMsg('Verifying payment and activating subscription')
       if (sessionId) {
         await confirmPayment({ sessionId, reference }).unwrap()
       }
-
       setVerificationState('confirmed')
-      setCountdown(5)
+      setCountdown(COUNTDOWN_DURATION)
     } catch (error) {
       setVerificationState('failed')
       toast.error(
@@ -96,82 +103,68 @@ export default function OnboardingPaymentSuccessPage() {
 
   useEffect(() => {
     let cancelled = false
-
     void (async () => {
-      if (!cancelled) {
-        await verifyPayment()
-      }
+      if (!cancelled) await verifyPayment()
     })()
-
     return () => {
       cancelled = true
     }
   }, [verifyPayment])
 
+  // Auto-redirect countdown after confirmed
   useEffect(() => {
-    if (verificationState !== 'confirmed') {
-      return
-    }
-
+    if (verificationState !== 'confirmed') return
     const timer = window.setInterval(() => {
-      setCountdown((current) => {
-        if (current <= 1) {
+      setCountdown((c) => {
+        if (c <= 1) {
           window.clearInterval(timer)
           router.push(`/${locale}/onboarding/complete`)
           return 0
         }
-
-        return current - 1
+        return c - 1
       })
     }, 1000)
-
     return () => window.clearInterval(timer)
   }, [locale, router, verificationState])
 
-  const handleContinue = () => {
-    router.push(`/${locale}/onboarding/complete`)
-  }
+  const handleContinue = () => router.push(`/${locale}/onboarding/complete`)
 
   const handleRetryVerification = () => {
     setVerificationState('loading')
-    setLoadingMessage('Retrying payment confirmation')
+    setLoadingMsg('Retrying payment verification')
     void verifyPayment()
   }
 
-  return (
-    <div className="min-h-screen bg-white px-4 py-16">
-      <div className="mx-auto flex w-full max-w-3xl items-center justify-center">
-        {verificationState === 'loading' ? (
-          <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="inline-flex size-14 items-center justify-center rounded-full bg-teal-50 mb-6">
-              <Loader2 className="size-6 animate-spin text-teal-700" />
-            </div>
-            <h1 className="text-[22px] font-semibold text-slate-900 mb-2">
-              {loadingMessage}
-            </h1>
-            <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-              Please wait while we verify your payment and activate your plan{' '}
-              <LoadingDots />
-            </p>
+  const handleChangePlan = () => {
+    router.push(`/${locale}/onboarding/plan`)
+  }
 
-            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {summary.map((item) => (
-                  <div key={item.label} className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-                      {item.label}
-                    </p>
-                    <p className="mt-1 text-sm font-medium text-gray-900">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+  return (
+    <div className="flex min-h-dvh items-center justify-center px-4 py-16 bg-white">
+      <div className="w-full max-w-md text-center">
+        {/* ── LOADING STATE ── */}
+        {verificationState === 'loading' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="inline-flex items-center justify-center size-14 rounded-full bg-teal-50 mb-6">
+              <RefreshCw
+                className="size-6 text-teal-700 animate-spin"
+                style={{ animationDuration: '0.8s' }}
+              />
             </div>
+            <h1 className="text-lg font-semibold text-slate-900 mb-1.5">
+              {loadingMsg}
+            </h1>
+            <p className="text-sm text-slate-500">
+              Please wait while we verify your payment and activate your plan.
+            </p>
           </div>
-        ) : verificationState === 'failed' ? (
-          <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="inline-flex size-16 items-center justify-center rounded-full bg-red-50 mb-5">
+        )}
+
+        {/* ── FAILED STATE ── */}
+        {verificationState === 'failed' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center size-16 rounded-full bg-red-50 mb-5">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                 <path
                   d="M7 7l14 14M21 7L7 21"
@@ -183,53 +176,75 @@ export default function OnboardingPaymentSuccessPage() {
             </div>
 
             <h1 className="text-[22px] font-semibold text-slate-900 mb-2">
-              Payment verification failed
+              Verification failed
             </h1>
             <p className="text-sm text-slate-500 mb-5 leading-relaxed">
-              We could not verify this checkout session yet. If Stripe has
-              already captured the payment, retry verification after a moment.
+              We could not confirm your checkout session. If payment was already
+              captured, retry after a moment.
             </p>
 
-            <div className="border border-red-100 rounded-3xl p-5 text-left mb-4 bg-white shadow-sm animate-in slide-in-from-bottom-2 duration-500 delay-75">
+            {/* Overview card — same style as failed page error detail */}
+            <div className="border border-red-100 rounded-xl bg-white p-5 text-left mb-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-red-700 mb-3.5">
-                Overview
+                Plan Overview
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {summary.map((row) => (
-                  <div key={row.label} className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-                      {row.label}
-                    </p>
-                    <p className="mt-1 text-sm font-medium text-gray-900">
-                      {row.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {summary.map((row) => (
+                <div
+                  key={row.label}
+                  className="flex justify-between items-baseline py-2.5 border-b border-slate-100 text-sm last:border-none"
+                >
+                  <span className="text-slate-500">{row.label}</span>
+                  <span
+                    className={cn(
+                      'font-medium text-slate-800',
+                      row.mono ? 'font-mono text-xs' : '',
+                    )}
+                  >
+                    {row.value}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end animate-in slide-in-from-bottom-2 duration-500 delay-150">
+            {/* CTAs */}
+            <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={handleRetryVerification}
-                className="flex h-11 items-center justify-center gap-2 rounded-lg bg-teal-600 px-5 text-sm font-medium text-white transition-colors duration-200 hover:bg-teal-700"
+                className="flex items-center justify-center gap-2 w-full h-11 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
               >
-                <RefreshCw className="size-4" />
+                <RefreshCw className="w-4 h-4" />
                 Retry verification
               </button>
 
               <button
                 type="button"
-                onClick={() => router.push(`/${locale}/onboarding/plan`)}
-                className="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 px-5 text-sm font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-50"
+                onClick={handleChangePlan}
+                className="flex items-center justify-center gap-2 w-full h-11 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium rounded-lg transition-colors duration-200"
               >
-                Choose another plan
+                <LayoutGrid className="w-4 h-4" />
+                Choose a different plan
               </button>
             </div>
+
+            {/* Support */}
+            <p className="text-[11px] text-slate-400 text-center mt-4 leading-relaxed">
+              Still having trouble?{' '}
+              <a
+                href={`/${locale}/support`}
+                className="text-slate-500 underline underline-offset-2 hover:text-slate-700 transition-colors"
+              >
+                Contact support
+              </a>
+            </p>
           </div>
-        ) : (
-          <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="inline-flex size-16 items-center justify-center rounded-full bg-teal-50 mb-5">
+        )}
+
+        {/* ── CONFIRMED STATE ── */}
+        {verificationState === 'confirmed' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center size-16 rounded-full bg-teal-50 mb-5">
               <CheckCircle2 className="size-7 text-teal-600" />
             </div>
 
@@ -237,36 +252,54 @@ export default function OnboardingPaymentSuccessPage() {
               Payment confirmed
             </h1>
             <p className="text-sm text-slate-500 mb-5 leading-relaxed">
-              Your subscription is active. Redirecting to completion in{' '}
-              {countdown}s.
+              Your subscription is now active and ready to use.
             </p>
 
-            <div className="border border-gray-200 rounded-3xl p-5 text-left mb-4 bg-white shadow-sm">
+            {/* Plan overview card — mirrors failed page error detail card */}
+            <div className="border border-teal-100 rounded-xl bg-white p-5 text-left mb-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-700 mb-3.5">
-                Overview
+                Plan overview
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {summary.map((item) => (
-                  <div key={item.label} className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-                      {item.label}
-                    </p>
-                    <p className="mt-1 text-sm font-medium text-gray-900">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {summary.map((row) => (
+                <div
+                  key={row.label}
+                  className="flex justify-between items-baseline py-2.5 border-b border-slate-100 text-sm last:border-none"
+                >
+                  <span className="text-slate-500">{row.label}</span>
+                  <span
+                    className={cn(
+                      'font-medium',
+                      row.highlight ? 'text-teal-700' : 'text-slate-800',
+                      row.mono ? 'font-mono text-xs' : '',
+                    )}
+                  >
+                    {row.value}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            {/* CTA + countdown */}
+            <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={handleContinue}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-teal-600 px-5 text-sm font-medium text-white transition-colors duration-200 hover:bg-teal-700"
+                className="relative flex items-center justify-center gap-2 w-full h-11 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium rounded-lg transition-colors duration-200 overflow-hidden"
               >
-                Continue to complete
+                Continue onboarding
+                <ArrowRight className="w-4 h-4" />
+                {/* countdown shrink bar */}
+                <span
+                  className="absolute bottom-0 left-0 h-0.75 bg-teal-500 transition-all duration-1000 ease-linear"
+                  style={{
+                    width: `${(countdown / COUNTDOWN_DURATION) * 100}%`,
+                  }}
+                />
               </button>
+
+              <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+                Redirecting automatically in {countdown}s
+              </p>
             </div>
           </div>
         )}

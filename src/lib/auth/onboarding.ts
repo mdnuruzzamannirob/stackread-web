@@ -37,6 +37,22 @@ export type OnboardingProgressSnapshot = Pick<
   OnboardingStatusResponse,
   'status' | 'startedAt' | 'selectedPlanCode' | 'interests' | 'selectedLanguage'
 >
+const onboardingPageOrder: Record<OnboardingPageStep, number> = {
+  welcome: 0,
+  interests: 1,
+  language: 2,
+  plan: 3,
+  complete: 4,
+}
+
+const onboardingStageOrder: Record<OnboardingProgressStage, number> = {
+  welcome: 0,
+  interests: 1,
+  language: 2,
+  plan: 3,
+  complete: 4,
+  dashboard: 5,
+}
 
 function hasSelectedLanguage(language?: string) {
   return language === 'en' || language === 'bn'
@@ -109,11 +125,7 @@ export function resolveOnboardingStepRedirect({
     return `/${locale}/dashboard`
   }
 
-  if (page === 'plan' && stage === 'complete') {
-    return null
-  }
-
-  if (page === stage) {
+  if (onboardingPageOrder[page] <= onboardingStageOrder[stage]) {
     return null
   }
 

@@ -135,7 +135,7 @@ export default function OnboardingLanguagePage() {
         <button
           type="button"
           disabled={isLoading}
-          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700"
+          className="rounded-lg bg-teal-600 font-medium px-6 py-2.5 text-white transition-all duration-150 hover:bg-teal-700 disabled:opacity-50 disabled:hover:bg-teal-600 disabled:cursor-not-allowed"
           onClick={continueToNextStep}
         >
           {isLoading ? 'Saving...' : 'Continue'}
