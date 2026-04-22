@@ -61,8 +61,8 @@ export function ReadingStats({
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-5">
-        <p className="text-sm text-slate-500">Loading dashboard stats...</p>
+      <div className="rounded-2xl border border-gray-100 bg-white p-5">
+        <p className="text-sm text-gray-500">Loading dashboard stats...</p>
       </div>
     )
   }
@@ -85,13 +85,13 @@ export function ReadingStats({
         return (
           <div
             key={stat.label}
-            className="min-h-52 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition duration-200 hover:border-primary/20"
+            className="min-h-52 rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition duration-200 hover:border-primary/20"
           >
-            <Icon className="size-5 text-slate-600" />
-            <p className="mt-10 text-3xl font-semibold tracking-tight text-slate-900">
+            <Icon className="size-5 text-gray-600" />
+            <p className="mt-10 text-3xl font-semibold tracking-tight text-gray-900">
               {stat.value}
             </p>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-slate-500">
+            <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-gray-500">
               {stat.label}
             </p>
           </div>
@@ -101,32 +101,32 @@ export function ReadingStats({
       <aside className="rounded-2xl border border-[#cfe0f8] bg-[#eaf2ff] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-base font-semibold text-slate-900">{planName}</p>
+            <p className="text-base font-semibold text-gray-900">{planName}</p>
             <span className="mt-2 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary">
               Active
             </span>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-semibold tracking-tight text-slate-900">
+            <p className="text-3xl font-semibold tracking-tight text-gray-900">
               {daysLeft}
             </p>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-gray-500">
               Days Left
             </p>
           </div>
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between text-sm text-slate-600">
+          <div className="flex items-center justify-between text-sm text-gray-600">
             <span>Renewal Date</span>
-            <span className="font-medium text-slate-900">{renewalDate}</span>
+            <span className="font-medium text-gray-900">{renewalDate}</span>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-slate-600">
+          <div className="flex items-center justify-between text-sm text-gray-600">
             <span>Auto-renew</span>
             <span
               className={`inline-flex h-5 w-11 items-center rounded-full px-1 ${
-                autoRenew ? 'bg-primary' : 'bg-slate-300'
+                autoRenew ? 'bg-primary' : 'bg-gray-300'
               }`}
             >
               <span

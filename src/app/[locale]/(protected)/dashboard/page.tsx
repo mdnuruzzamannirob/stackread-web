@@ -190,12 +190,12 @@ export default function DashboardPage() {
 
         <aside id="notifications" className="space-y-8 pt-1">
           <div className="rounded-2xl border border-transparent bg-transparent px-1 py-1">
-            <div className="border-l-4 border-[#a86c4e] pl-4 text-slate-700">
-              <p className="text-base leading-8 italic text-slate-700">
+            <div className="border-l-4 border-[#a86c4e] pl-4 text-gray-700">
+              <p className="text-base leading-8 italic text-gray-700">
                 “A reader lives a thousand lives before he dies. The man who
                 never reads lives only one.”
               </p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.28em] text-gray-500">
                 — George R.R. Martin
               </p>
             </div>

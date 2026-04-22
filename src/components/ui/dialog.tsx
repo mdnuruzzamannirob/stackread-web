@@ -20,7 +20,7 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Backdrop
     ref={ref}
-    className={cn('fixed inset-0 z-50 bg-slate-950/45', className)}
+    className={cn('fixed inset-0 z-50 bg-gray-950/45', className)}
     {...props}
   />
 ))
@@ -35,14 +35,14 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Popup
       ref={ref}
       className={cn(
-        'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white shadow-2xl outline-none',
+        'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-gray-200 bg-white shadow-2xl outline-none',
         className,
       )}
       {...props}
     >
       {children}
       <DialogClose
-        className="absolute right-4 top-4 rounded-md border border-slate-200 p-1.5 text-slate-500 transition hover:bg-slate-100"
+        className="absolute right-4 top-4 rounded-md border border-gray-200 p-1.5 text-gray-500 transition hover:bg-gray-100"
         aria-label="Close dialog"
       >
         <X className="size-4" />
@@ -58,7 +58,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col gap-1.5 border-b border-slate-100 px-5 py-4',
+      'flex flex-col gap-1.5 border-b border-gray-100 px-5 py-4',
       className,
     )}
     {...props}
@@ -86,7 +86,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn('text-lg font-semibold text-slate-800', className)}
+    className={cn('text-lg font-semibold text-gray-800', className)}
     {...props}
   />
 ))
@@ -98,7 +98,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm text-slate-500', className)}
+    className={cn('text-sm text-gray-500', className)}
     {...props}
   />
 ))

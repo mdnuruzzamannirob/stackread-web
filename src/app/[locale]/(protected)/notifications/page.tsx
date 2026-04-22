@@ -126,8 +126,8 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <section className="rounded-xl border border-neutral-200 bg-white p-6">
-        <p className="text-sm text-slate-500">Loading notifications...</p>
+      <section className="rounded-xl border border-gray-200 bg-white p-6">
+        <p className="text-sm text-gray-500">Loading notifications...</p>
       </section>
     )
   }
@@ -135,8 +135,8 @@ export default function NotificationsPage() {
   return (
     <section className="space-y-8">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
-        <article className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-6">
-          <div className="pointer-events-none absolute right-16 top-8 text-neutral-200">
+        <article className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6">
+          <div className="pointer-events-none absolute right-16 top-8 text-gray-200">
             <BellRing className="size-20" />
           </div>
 
@@ -144,7 +144,7 @@ export default function NotificationsPage() {
             <h1 className="text-2xl font-semibold text-brand-600 sm:text-3xl">
               Inbox Overview
             </h1>
-            <p className="max-w-sm text-sm text-slate-600">
+            <p className="max-w-sm text-sm text-gray-600">
               You have {unreadCount} unread updates across your curated library
               and system alerts from the backend.
             </p>
@@ -164,7 +164,7 @@ export default function NotificationsPage() {
                     'Notification preferences are in Settings > Preferences.',
                   )
                 }
-                className="h-10 rounded-md hover:bg-brand-200 px-4 text-xs font-semibold text-neutral-600 hover:text-brand-600"
+                className="h-10 rounded-md hover:bg-brand-200 px-4 text-xs font-semibold text-gray-600 hover:text-brand-600"
               >
                 Preferences
               </button>
@@ -187,13 +187,13 @@ export default function NotificationsPage() {
                   className={`flex w-full items-center justify-between rounded-md px-4 py-2.5 text-left text-sm font-semibold transition ${
                     isActive
                       ? 'text-brand-600 bg-white'
-                      : 'text-neutral-600 hover:bg-white'
+                      : 'text-gray-600 hover:bg-white'
                   }`}
                 >
                   <span>{filter.label}</span>
                   <span
                     className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] leading-5 ${
-                      isActive ? 'bg-brand-600  text-white' : 'text-slate-500'
+                      isActive ? 'bg-brand-600  text-white' : 'text-gray-500'
                     }`}
                   >
                     {filter.count}
@@ -215,8 +215,8 @@ export default function NotificationsPage() {
 
           return (
             <section key={group} className="space-y-4">
-              <div className="border-t border-slate-200 pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <div className="border-t border-gray-200 pt-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
                   {group}
                 </p>
               </div>
@@ -228,7 +228,7 @@ export default function NotificationsPage() {
                   return (
                     <article
                       key={notification.id}
-                      className={`rounded-xl border border-slate-200 bg-white px-4 py-4 ${
+                      className={`rounded-xl border border-gray-200 bg-white px-4 py-4 ${
                         notification.read ? 'opacity-70' : ''
                       }`}
                     >
@@ -240,7 +240,7 @@ export default function NotificationsPage() {
                               : notification.icon === 'shield'
                                 ? 'bg-[#dbeafe] text-sky-700'
                                 : notification.icon === 'clock'
-                                  ? 'bg-slate-200 text-slate-500'
+                                  ? 'bg-gray-200 text-gray-500'
                                   : 'bg-amber-200 text-amber-700'
                           }`}
                         >
@@ -256,24 +256,24 @@ export default function NotificationsPage() {
                                   : notification.badge === 'System'
                                     ? 'bg-blue-100 text-blue-700'
                                     : notification.badge === 'Reminder'
-                                      ? 'bg-slate-200 text-slate-500'
+                                      ? 'bg-gray-200 text-gray-500'
                                       : 'bg-amber-100 text-amber-700'
                               }`}
                             >
                               {notification.badge}
                             </span>
-                            <span className="text-slate-400">
+                            <span className="text-gray-400">
                               {notification.timestamp}
                             </span>
                           </div>
 
                           <Link href={detailsHref} className="block">
-                            <h2 className="text-[17px] font-semibold leading-snug text-slate-900 hover:text-[#0e7178]">
+                            <h2 className="text-[17px] font-semibold leading-snug text-gray-900 hover:text-[#0e7178]">
                               {notification.title}
                             </h2>
                           </Link>
 
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-gray-500">
                             {notification.description}
                           </p>
 
@@ -290,7 +290,7 @@ export default function NotificationsPage() {
                             </Link>
                             <button
                               type="button"
-                              className="text-slate-400 hover:text-slate-600"
+                              className="text-gray-400 hover:text-gray-600"
                               onClick={() =>
                                 toast.message(notification.secondaryAction)
                               }
@@ -304,7 +304,7 @@ export default function NotificationsPage() {
                           {!notification.read ? (
                             <Dot className="size-5 text-[#0e7178]" />
                           ) : (
-                            <Dot className="size-5 text-slate-300" />
+                            <Dot className="size-5 text-gray-300" />
                           )}
                         </div>
                       </div>
@@ -317,8 +317,8 @@ export default function NotificationsPage() {
         })}
 
         {!notifications.length ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <p className="text-sm text-slate-500">
+          <section className="rounded-xl border border-gray-200 bg-white p-6">
+            <p className="text-sm text-gray-500">
               Your inbox is empty right now.
             </p>
           </section>
@@ -329,7 +329,7 @@ export default function NotificationsPage() {
         <Button
           type="button"
           variant="outline"
-          className="h-10 rounded-xl border-slate-200 bg-slate-100 px-6 text-xs font-semibold uppercase tracking-[0.12em] text-[#0e7178] hover:bg-slate-200"
+          className="h-10 rounded-xl border-gray-200 bg-gray-100 px-6 text-xs font-semibold uppercase tracking-[0.12em] text-[#0e7178] hover:bg-gray-200"
           onClick={loadOlderNotifications}
         >
           Load older notifications

@@ -167,10 +167,10 @@ export default function OnboardingPaymentSuccessPage() {
                 style={{ animationDuration: '0.8s' }}
               />
             </div>
-            <h1 className="text-lg font-semibold text-slate-900 mb-1.5">
+            <h1 className="text-lg font-semibold text-gray-900 mb-1.5">
               {loadingMsg}
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-gray-500">
               Please wait while we verify your payment and activate your plan.
             </p>
           </div>
@@ -191,10 +191,10 @@ export default function OnboardingPaymentSuccessPage() {
               </svg>
             </div>
 
-            <h1 className="text-[22px] font-semibold text-slate-900 mb-2">
+            <h1 className="text-[22px] font-semibold text-gray-900 mb-2">
               Verification failed
             </h1>
-            <p className="text-sm text-slate-500 mb-5 leading-relaxed">
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
               We could not confirm your checkout session. If payment was already
               captured, retry after a moment.
             </p>
@@ -207,12 +207,12 @@ export default function OnboardingPaymentSuccessPage() {
               {summary.map((row) => (
                 <div
                   key={row.label}
-                  className="flex justify-between items-baseline py-2.5 border-b border-slate-100 text-sm last:border-none"
+                  className="flex justify-between items-baseline py-2.5 border-b border-gray-100 text-sm last:border-none"
                 >
-                  <span className="text-slate-500">{row.label}</span>
+                  <span className="text-gray-500">{row.label}</span>
                   <span
                     className={cn(
-                      'font-medium text-slate-800',
+                      'font-medium text-gray-800',
                       row.mono ? 'font-mono text-xs' : '',
                     )}
                   >
@@ -236,7 +236,7 @@ export default function OnboardingPaymentSuccessPage() {
               <button
                 type="button"
                 onClick={handleChangePlan}
-                className="flex items-center justify-center gap-2 w-full h-11 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium rounded-lg transition-colors duration-200"
+                className="flex items-center justify-center gap-2 w-full h-11 border border-gray-200 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors duration-200"
               >
                 <LayoutGrid className="w-4 h-4" />
                 Choose a different plan
@@ -244,11 +244,11 @@ export default function OnboardingPaymentSuccessPage() {
             </div>
 
             {/* Support */}
-            <p className="text-[11px] text-slate-400 text-center mt-4 leading-relaxed">
+            <p className="text-[11px] text-gray-400 text-center mt-4 leading-relaxed">
               Still having trouble?{' '}
               <a
                 href={`/${locale}/support`}
-                className="text-slate-500 underline underline-offset-2 hover:text-slate-700 transition-colors"
+                className="text-gray-500 underline underline-offset-2 hover:text-gray-700 transition-colors"
               >
                 Contact support
               </a>
@@ -264,10 +264,10 @@ export default function OnboardingPaymentSuccessPage() {
               <CheckCircle2 className="size-7 text-teal-600" />
             </div>
 
-            <h1 className="text-[22px] font-semibold text-slate-900 mb-2">
+            <h1 className="text-[22px] font-semibold text-gray-900 mb-2">
               Payment confirmed
             </h1>
-            <p className="text-sm text-slate-500 mb-5 leading-relaxed">
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
               Your subscription is now active and ready to use.
             </p>
 
@@ -279,13 +279,13 @@ export default function OnboardingPaymentSuccessPage() {
               {summary.map((row) => (
                 <div
                   key={row.label}
-                  className="flex justify-between items-baseline py-2.5 border-b border-slate-100 text-sm last:border-none"
+                  className="flex justify-between items-baseline py-2.5 border-b border-gray-100 text-sm last:border-none"
                 >
-                  <span className="text-slate-500">{row.label}</span>
+                  <span className="text-gray-500">{row.label}</span>
                   <span
                     className={cn(
                       'font-medium',
-                      row.highlight ? 'text-teal-700' : 'text-slate-800',
+                      row.highlight ? 'text-teal-700' : 'text-gray-800',
                       row.mono ? 'font-mono text-xs' : '',
                     )}
                   >
@@ -313,7 +313,7 @@ export default function OnboardingPaymentSuccessPage() {
                 />
               </button>
 
-              <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+              <p className="text-[11px] text-gray-400 text-center leading-relaxed">
                 Redirecting automatically in {countdown}s
               </p>
             </div>

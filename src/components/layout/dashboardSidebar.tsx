@@ -46,7 +46,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
           className={`flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm font-medium transition-all duration-200 ${
             isActive
               ? 'bg-brand-200 text-brand-600'
-              : 'text-slate-600 hover:bg-brand-100 hover:text-brand-600'
+              : 'text-gray-600 hover:bg-brand-100 hover:text-brand-600'
           }`}
           style={{ paddingLeft: `${14 + depth * 16}px` }}
         >
@@ -65,7 +65,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
       <div key={node.id} className="space-y-1">
         <div
           className={`flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm font-medium ${
-            isActive ? 'text-brand-600' : 'text-slate-600'
+            isActive ? 'text-brand-600' : 'text-gray-600'
           }`}
           style={{ paddingLeft: `${14 + depth * 16}px` }}
         >
@@ -88,7 +88,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
             <p className="text-lg font-bold leading-none text-brand-600">
               StackRead
             </p>
-            <p className="mt-1 text-[8px] uppercase tracking-[2.1px] text-neutral-500">
+            <p className="mt-1 text-[8px] uppercase tracking-[2.1px] text-gray-500">
               {t('brandTagline')}
             </p>
           </div>
@@ -97,7 +97,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
         <button
           type="button"
           onClick={closeSidebar}
-          className="rounded-xl border border-border bg-background p-2 text-slate-500 transition hover:border-primary/30 hover:text-primary md:hidden"
+          className="rounded-xl border border-border bg-background p-2 text-gray-500 transition hover:border-primary/30 hover:text-primary md:hidden"
           aria-label={t('closeSidebar')}
         >
           <X className="size-4" />
@@ -107,7 +107,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
       <nav className="flex flex-col gap-4 overflow-y-auto pr-1">
         {dashboardPageSections.map((section) => (
           <section key={section.id} className="space-y-1.5">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
               {translate(section.labelKey)}
             </p>
             <div className="space-y-1">
@@ -135,7 +135,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
         </div>
 
         <div className="space-y-1.5 border-t border-border pt-4">
-          <button className="flex items-center w-full gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-500 duration-200 transition hover:bg-red-50 hover:text-red-600">
+          <button className="flex items-center w-full gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 duration-200 transition hover:bg-red-50 hover:text-red-600">
             <LogOut className="size-4" /> <span>Logout</span>
           </button>
         </div>

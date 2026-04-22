@@ -96,7 +96,7 @@ const TwoFactorAuthenticationRecovery = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Use Backup Code
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Enter one of your backup codes to continue. Each code can only
                   be used once.
                 </p>

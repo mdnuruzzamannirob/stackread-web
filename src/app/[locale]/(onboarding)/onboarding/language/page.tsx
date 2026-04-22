@@ -116,7 +116,7 @@ export default function OnboardingLanguagePage() {
                 >
                   {option.label}
                 </h2>
-                <p className="text-sm text-slate-500">{option.description}</p>
+                <p className="text-sm text-gray-500">{option.description}</p>
               </div>
             </button>
           )

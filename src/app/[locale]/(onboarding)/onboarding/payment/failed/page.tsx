@@ -148,10 +148,10 @@ export default function OnboardingPaymentFailedPage() {
                 style={{ animationDuration: '0.8s' }}
               />
             </div>
-            <h1 className="text-lg font-semibold text-slate-900 mb-1.5">
+            <h1 className="text-lg font-semibold text-gray-900 mb-1.5">
               {loadingMsg}
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-gray-500">
               Please wait while we retry the checkout verification{' '}
             </p>
           </div>
@@ -172,10 +172,10 @@ export default function OnboardingPaymentFailedPage() {
               </svg>
             </div>
 
-            <h1 className="text-[22px] font-semibold text-slate-900 mb-2">
+            <h1 className="text-[22px] font-semibold text-gray-900 mb-2">
               Payment failed
             </h1>
-            <p className="text-sm text-slate-500 mb-5 leading-relaxed">
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
               No charge was made to your card.
             </p>
 
@@ -198,13 +198,13 @@ export default function OnboardingPaymentFailedPage() {
                 ].map((row) => (
                   <div
                     key={row.label}
-                    className="flex justify-between items-baseline py-2.5 border-b border-slate-100 text-sm last:border-none"
+                    className="flex justify-between items-baseline py-2.5 border-b border-gray-100 text-sm last:border-none"
                   >
-                    <span className="text-slate-500">{row.label}</span>
+                    <span className="text-gray-500">{row.label}</span>
                     <span
                       className={cn(
                         'font-medium',
-                        row.red ? 'text-red-700' : 'text-slate-800',
+                        row.red ? 'text-red-700' : 'text-gray-800',
                         row.mono ? 'font-mono text-xs' : '',
                       )}
                     >
@@ -217,7 +217,7 @@ export default function OnboardingPaymentFailedPage() {
 
             {/* Tips */}
             <div className="text-left mb-4 bg-white">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-700">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-700">
                 Things to try
               </p>
 
@@ -225,19 +225,19 @@ export default function OnboardingPaymentFailedPage() {
                 {TIPS.map((tip, i) => (
                   <div key={i}>
                     <div className="flex items-center gap-3 py-3">
-                      <div className="shrink-0 flex size-7 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
+                      <div className="shrink-0 flex size-7 items-center justify-center rounded-full border border-gray-200 bg-gray-50">
                         <tip.icon
                           size={14}
                           strokeWidth={1.75}
-                          className="text-slate-700"
+                          className="text-gray-700"
                         />
                       </div>
-                      <span className="text-xs text-slate-700 leading-snug">
+                      <span className="text-xs text-gray-700 leading-snug">
                         {tip.message}
                       </span>
                     </div>
                     {i < TIPS.length - 1 && (
-                      <div className="h-px bg-slate-100" />
+                      <div className="h-px bg-gray-100" />
                     )}
                   </div>
                 ))}
@@ -258,7 +258,7 @@ export default function OnboardingPaymentFailedPage() {
               <button
                 type="button"
                 onClick={handleChangePlan}
-                className="flex items-center justify-center gap-2 w-full h-11 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium rounded-lg transition-colors duration-200"
+                className="flex items-center justify-center gap-2 w-full h-11 border border-gray-200 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors duration-200"
               >
                 <LayoutGrid className="w-4 h-4" />
                 Choose a different plan
@@ -266,11 +266,11 @@ export default function OnboardingPaymentFailedPage() {
             </div>
 
             {/* Support */}
-            <p className="text-[11px] text-slate-400 text-center mt-4 leading-relaxed">
+            <p className="text-[11px] text-gray-400 text-center mt-4 leading-relaxed">
               Still having trouble?{' '}
               <a
                 href={`/${locale}/support`}
-                className="text-slate-500 underline underline-offset-2 hover:text-slate-700 transition-colors"
+                className="text-gray-500 underline underline-offset-2 hover:text-gray-700 transition-colors"
               >
                 Contact support
               </a>

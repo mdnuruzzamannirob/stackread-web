@@ -22,10 +22,10 @@ export function TopicsGrid({
 }: TopicsGridProps) {
   return (
     <section id="genres" aria-label={`Popular genres in ${locale}`}>
-      <h3 className="text-lg font-semibold text-slate-900">Popular Genres</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Popular Genres</h3>
 
       {isLoading ? (
-        <p className="mt-4 text-sm text-slate-500">Loading genres...</p>
+        <p className="mt-4 text-sm text-gray-500">Loading genres...</p>
       ) : null}
 
       {hasError ? (
@@ -35,7 +35,7 @@ export function TopicsGrid({
       ) : null}
 
       {!isLoading && !hasError && !topics.length ? (
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-gray-500">
           Genre recommendations will appear soon.
         </p>
       ) : null}
@@ -45,7 +45,7 @@ export function TopicsGrid({
           <Link
             key={topic.id}
             href={`/${locale}/search?q=${encodeURIComponent(topic.label)}`}
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-primary/25 hover:text-primary"
+            className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:border-primary/25 hover:text-primary"
           >
             {topic.label}
           </Link>

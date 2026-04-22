@@ -16,11 +16,11 @@ export function AuthCard({
           <p className="text-[0.66rem] font-semibold uppercase tracking-[0.26em] text-sky-700/80">
             Stackread Auth
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
             {title}
           </h1>
           {subtitle ? (
-            <p className="text-sm text-slate-600">{subtitle}</p>
+            <p className="text-sm text-gray-600">{subtitle}</p>
           ) : null}
         </div>
         {children}

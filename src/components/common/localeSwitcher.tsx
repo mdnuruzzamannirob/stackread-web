@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
 import { routing } from '@/i18n/routing'
 
 export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
@@ -32,13 +31,12 @@ export function LocaleSwitcher({ currentLocale }: { currentLocale: string }) {
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
       onClick={switchLocale}
-      className={'size-10'}
+      className="flex size-10 items-center justify-center rounded-lg font-medium border bg-white border-gray-200 hover:border-gray-300 duration-150 text-gray-500 hover:text-inherit"
     >
       {currentLocale === 'en' ? 'BN' : 'EN'}
-    </Button>
+    </button>
   )
 }

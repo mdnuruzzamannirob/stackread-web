@@ -75,13 +75,13 @@ export default function PreferencesPage() {
             <SkeletonRow />
           </div>
         ) : (
-          <div className="space-y-1 divide-y divide-slate-100">
+          <div className="space-y-1 divide-y divide-gray-100">
             <div className="flex items-start justify-between gap-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-gray-800">
                   Weekly Knowledge Digest
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-gray-500">
                   Receive a curated email summarizing top discussions and new
                   collections in your areas of interest.
                 </p>
@@ -94,10 +94,10 @@ export default function PreferencesPage() {
 
             <div className="flex items-start justify-between gap-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-gray-800">
                   Critical Push Notifications
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-gray-500">
                   Get immediate alerts for direct messages, mentions, and
                   security updates on your registered devices.
                 </p>
@@ -112,13 +112,13 @@ export default function PreferencesPage() {
 
             <div className="flex items-start justify-between gap-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-gray-800">
                   Early Access Features{' '}
                   <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
                     Beta
                   </span>
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-gray-500">
                   Opt in to preview experimental editorial tools and reading
                   layouts before they are released globally.
                 </p>

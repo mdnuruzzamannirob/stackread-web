@@ -79,9 +79,9 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
   ]
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#f7fafc] shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
       <div className="p-4">
-        <div className="relative mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-[#111827]">
+        <div className="relative mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-[#111827]">
           {user?.profilePicture ? (
             <Image
               src={user?.profilePicture}
@@ -96,8 +96,8 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
         </div>
 
         <div className="mt-4 space-y-1 text-center">
-          <p className="text-lg font-semibold text-slate-900">{fullName}</p>
-          <p className="mx-auto inline-flex max-w-full items-center gap-1.5 text-xs font-medium text-slate-500">
+          <p className="text-lg font-semibold text-gray-900">{fullName}</p>
+          <p className="mx-auto inline-flex max-w-full items-center gap-1.5 text-xs font-medium text-gray-500">
             <Mail className="size-3.5 shrink-0" />
             <span className="truncate">{user?.email ?? 'No email added'}</span>
           </p>
@@ -110,17 +110,17 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
           </span>
         </div>
 
-        <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <div className="mt-3 rounded-xl border border-gray-200 bg-white px-3 py-2 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
             Subscription
           </p>
-          <p className="mt-1 text-sm font-semibold text-slate-800">
+          <p className="mt-1 text-sm font-semibold text-gray-800">
             Free member
           </p>
         </div>
       </div>
 
-      <div className="border-t border-slate-200" />
+      <div className="border-t border-gray-200" />
 
       <nav className="p-2">
         {settingsLinks.map((item) => {
@@ -136,11 +136,11 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
               className={`mb-2 flex items-center gap-2.5 rounded-lg px-3 py-3 text-sm font-semibold transition-colors last:mb-0 ${
                 isActive
                   ? item.isDanger
-                    ? 'bg-[#ffecec] text-red-600'
-                    : 'bg-[#edf3f5] text-[#0f4c5c]'
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-gray-100 text-teal-600'
                   : item.isDanger
-                    ? 'text-red-500 hover:bg-[#ffecec]'
-                    : 'text-slate-600 hover:bg-white'
+                    ? 'text-red-600 hover:bg-red-50'
+                    : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
               <Icon className="size-4" />

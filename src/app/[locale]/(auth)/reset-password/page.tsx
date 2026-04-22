@@ -102,7 +102,7 @@ const ResetPasswordPage = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Create New Password
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Choose a strong new password for your account.
                 </p>
               </div>

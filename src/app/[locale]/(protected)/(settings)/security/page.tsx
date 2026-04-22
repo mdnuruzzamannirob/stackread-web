@@ -115,14 +115,14 @@ function SecurityFeatureRow({
   danger?: boolean
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 rounded-lg bg-white p-2 text-slate-600 ring-1 ring-slate-200">
+        <span className="mt-0.5 rounded-lg bg-white p-2 text-gray-600 ring-1 ring-gray-200">
           {icon}
         </span>
         <div>
-          <p className="text-sm font-semibold text-slate-800">{title}</p>
-          <p className="text-xs text-slate-500">{description}</p>
+          <p className="text-sm font-semibold text-gray-800">{title}</p>
+          <p className="text-xs text-gray-500">{description}</p>
         </div>
       </div>
       <button
@@ -531,21 +531,21 @@ export default function SecurityPage() {
             placeholder="Current password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
+            className="h-10 rounded-md border border-gray-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
             placeholder="New password"
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
+            className="h-10 rounded-md border border-gray-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="h-10 rounded-md border border-slate-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
+            className="h-10 rounded-md border border-gray-200 bg-[#eef2f4] px-3 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div className="flex justify-end">
@@ -564,10 +564,10 @@ export default function SecurityPage() {
       <SettingsCard className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">
+            <h3 className="text-lg font-semibold text-gray-800">
               Two-Factor Authentication
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-gray-500">
               Configure TOTP or Email OTP and keep backup codes ready for
               account recovery.
             </p>
@@ -580,7 +580,7 @@ export default function SecurityPage() {
         </div>
 
         {typeof remainingBackupCodes === 'number' ? (
-          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">
             Remaining backup codes: <strong>{remainingBackupCodes}</strong>
           </p>
         ) : null}
@@ -633,11 +633,11 @@ export default function SecurityPage() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <ShieldEllipsis className="size-4 text-brand-700" />
-            <h3 className="text-lg font-semibold text-slate-800">
+            <h3 className="text-lg font-semibold text-gray-800">
               Recent Logins
             </h3>
           </div>
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-gray-500">
             {loginHistory.length > 0
               ? `Showing ${visibleStart}-${visibleEnd} of ${loginHistoryPagination?.total ?? loginHistory.length}`
               : 'No entries to display'}
@@ -646,33 +646,33 @@ export default function SecurityPage() {
 
         {isLoadingHistory ? (
           <div className="space-y-2">
-            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-10 animate-pulse rounded-md bg-gray-100" />
+            <div className="h-10 animate-pulse rounded-md bg-gray-100" />
           </div>
         ) : loginHistory.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             No recent login history found.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50">
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Date & Time
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Device / Browser
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Location
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {loginHistory.map((entry) => (
                   <tr key={entry.id}>
                     <td className="px-4 py-2">
@@ -686,7 +686,7 @@ export default function SecurityPage() {
                     </td>
                     <td className="px-4 py-2">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${entry.status === 'current' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${entry.status === 'current' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}
                       >
                         {resolveStatusLabel(entry.status)}
                       </span>
@@ -700,7 +700,7 @@ export default function SecurityPage() {
 
         {loginHistoryPagination ? (
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-gray-500">
               Page {loginHistoryPagination.page} of{' '}
               {loginHistoryPagination.totalPages}
             </p>
@@ -711,7 +711,7 @@ export default function SecurityPage() {
                 disabled={
                   !loginHistoryPagination.hasPreviousPage || isLoadingHistory
                 }
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Previous
               </button>
@@ -721,7 +721,7 @@ export default function SecurityPage() {
                 disabled={
                   !loginHistoryPagination.hasNextPage || isLoadingHistory
                 }
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
               </button>
@@ -753,11 +753,11 @@ export default function SecurityPage() {
             value={setupPassword}
             onChange={(event) => setSetupPassword(event.target.value)}
             placeholder="Current password"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-brand-500"
           />
 
           {setupData ? (
-            <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+            <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
               {setupMethod === 'totp' ? (
                 <>
                   <div className="mt-2 flex justify-center">
@@ -767,31 +767,31 @@ export default function SecurityPage() {
                         alt="2FA QR code"
                         width={176}
                         height={176}
-                        className="size-44 rounded-lg bg-white p-2 ring-1 ring-slate-200"
+                        className="size-44 rounded-lg bg-white p-2 ring-1 ring-gray-200"
                       />
                     ) : (
-                      <div className="flex size-44 items-center justify-center rounded-lg bg-white text-sm text-slate-500 ring-1 ring-slate-200">
+                      <div className="flex size-44 items-center justify-center rounded-lg bg-white text-sm text-gray-500 ring-1 ring-gray-200">
                         QR unavailable
                       </div>
                     )}
                   </div>
-                  <p className="mt-3 break-all text-xs font-medium text-slate-500">
+                  <p className="mt-3 break-all text-xs font-medium text-gray-500">
                     Secret: {setupData.secret}
                   </p>
                 </>
               ) : (
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-gray-600">
                   Setup session is ready. Use the email OTP sent to{' '}
                   {userEmail || 'your account email'}.
                 </p>
               )}
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-gray-500">
                 Backup codes are prepared and will be shown after setup
                 completes.
               </p>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-gray-500">
               Enter your current password and start setup.
             </p>
           )}
@@ -809,7 +809,7 @@ export default function SecurityPage() {
                     ? '6-digit authenticator OTP'
                     : '6-digit email OTP'
                 }
-                className="h-11 w-full rounded-md border border-slate-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
+                className="h-11 w-full rounded-md border border-gray-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
               />
 
               {setupMethod === 'email' ? (
@@ -842,7 +842,7 @@ export default function SecurityPage() {
               setShowSetupModal(false)
               resetSetupState()
             }}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
           >
             Cancel
           </button>
@@ -884,11 +884,11 @@ export default function SecurityPage() {
         }}
       >
         <div className="space-y-4">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
               Remaining Codes
             </p>
-            <p className="mt-1 text-sm text-slate-700">
+            <p className="mt-1 text-sm text-gray-700">
               {typeof remainingBackupCodes === 'number'
                 ? `${remainingBackupCodes} code(s) available.`
                 : 'Not checked yet.'}
@@ -896,7 +896,7 @@ export default function SecurityPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-600">
+            <label className="text-xs font-medium text-gray-600">
               Authenticator OTP (required)
             </label>
             <input
@@ -906,7 +906,7 @@ export default function SecurityPage() {
               }
               inputMode="numeric"
               placeholder="6-digit OTP"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-md border border-gray-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
             />
             <Button
               type="button"
@@ -925,10 +925,10 @@ export default function SecurityPage() {
             </Button>
           </div>
 
-          <div className="h-px bg-slate-200" />
+          <div className="h-px bg-gray-200" />
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-600">
+            <label className="text-xs font-medium text-gray-600">
               Current Password (required)
             </label>
             <input
@@ -936,9 +936,9 @@ export default function SecurityPage() {
               value={regeneratePassword}
               onChange={(event) => setRegeneratePassword(event.target.value)}
               placeholder="Current password"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-brand-500"
             />
-            <label className="text-xs font-medium text-slate-600">
+            <label className="text-xs font-medium text-gray-600">
               Authenticator OTP (optional)
             </label>
             <input
@@ -948,7 +948,7 @@ export default function SecurityPage() {
               }
               inputMode="numeric"
               placeholder="6-digit OTP (optional)"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-md border border-gray-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
             />
             <Button
               type="button"
@@ -983,7 +983,7 @@ export default function SecurityPage() {
             value={disablePassword}
             onChange={(event) => setDisablePassword(event.target.value)}
             placeholder="Current password"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-brand-500"
           />
           <input
             value={disableOtp}
@@ -992,7 +992,7 @@ export default function SecurityPage() {
             }
             inputMode="numeric"
             placeholder="6-digit authenticator OTP (optional)"
-            className="h-11 w-full rounded-md border border-slate-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-md border border-gray-300 px-3 text-center text-sm tracking-[0.3em] outline-none focus:border-brand-500"
           />
         </div>
         <div className="mt-4 flex justify-end gap-2">
@@ -1002,7 +1002,7 @@ export default function SecurityPage() {
               setShowDisableModal(false)
               resetDisableState()
             }}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
           >
             Cancel
           </button>
@@ -1033,7 +1033,7 @@ export default function SecurityPage() {
             {revealedBackupCodes.map((code, index) => (
               <div
                 key={`${code}-${index}`}
-                className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center font-mono text-sm tracking-[0.14em] text-slate-700"
+                className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-center font-mono text-sm tracking-[0.14em] text-gray-700"
               >
                 {code}
               </div>

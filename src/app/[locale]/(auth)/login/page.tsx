@@ -107,7 +107,7 @@ const LoginPage = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Welcome Back
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Sign in to continue your reading journey with StackRead.
                 </p>
               </div>

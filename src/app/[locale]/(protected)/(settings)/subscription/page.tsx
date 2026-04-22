@@ -61,9 +61,9 @@ const statusToneClass = (status: MyPaymentSummary['status']) => {
     case 'initiated':
       return 'bg-amber-100 text-amber-700'
     case 'refunded':
-      return 'bg-slate-100 text-slate-700'
+      return 'bg-gray-100 text-gray-700'
     default:
-      return 'bg-slate-100 text-slate-700'
+      return 'bg-gray-100 text-gray-700'
   }
 }
 
@@ -359,21 +359,21 @@ export default function SubscriptionPage() {
         description="Manage your subscription plan, billing cycle, and payment methods to ensure uninterrupted access."
       />
 
-      <SettingsCard className="border-l-4 border-l-[#0b7b8b]">
+      <SettingsCard className="">
         {isSubscriptionLoading || isPlansLoading ? (
           <div className="space-y-3">
-            <div className="h-16 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-16 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-16 animate-pulse rounded-md bg-gray-100" />
+            <div className="h-16 animate-pulse rounded-md bg-gray-100" />
           </div>
         ) : (
           <div className="space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[1.6px] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[1.6px] text-gray-500">
                   Current Plan
                 </p>
                 <div className="mt-1 flex items-center gap-2">
-                  <h3 className="text-3xl font-bold text-slate-900">
+                  <h3 className="text-3xl font-bold text-gray-900">
                     {currentPlan?.name ?? 'Free Plan'}
                   </h3>
                   {subscription ? (
@@ -384,12 +384,12 @@ export default function SubscriptionPage() {
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-gray-600">
                   {currentPlan?.description ??
                     'You are currently on free access.'}
                 </p>
                 {subscription ? (
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-gray-600">
                     Next payment due on{' '}
                     {formatDateLabel(subscription.currentPeriodEnd)}.
                   </p>
@@ -424,11 +424,11 @@ export default function SubscriptionPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border border-slate-200 bg-[#f8fafb] p-4">
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="rounded-lg border border-gray-200 bg-[#f8fafb] p-4">
+                <p className="text-sm font-semibold text-gray-900">
                   Need more features?
                 </p>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-gray-600">
                   Upgrade to our Enterprise plan for unlimited collaborators and
                   AI access.
                 </p>
@@ -449,11 +449,11 @@ export default function SubscriptionPage() {
                 </button>
               </div>
 
-              <div className="rounded-lg border border-slate-200 bg-[#f8fafb] p-4">
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="rounded-lg border border-gray-200 bg-[#f8fafb] p-4">
+                <p className="text-sm font-semibold text-gray-900">
                   Looking for less?
                 </p>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-gray-600">
                   Switch to a lighter plan if you do not need advanced access.
                 </p>
                 <button
@@ -479,7 +479,7 @@ export default function SubscriptionPage() {
                 type="button"
                 disabled={isBusy || !subscription || isFreeCurrentPlan}
                 onClick={() => setShowCancelModal(true)}
-                className="text-sm text-slate-500 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="text-sm text-gray-500 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel Subscription
               </button>
@@ -502,7 +502,7 @@ export default function SubscriptionPage() {
           </div>
 
           {isPaymentMethodLoading ? (
-            <div className="mt-4 h-16 animate-pulse rounded-md bg-slate-100" />
+            <div className="mt-4 h-16 animate-pulse rounded-md bg-gray-100" />
           ) : (
             <>
               <div
@@ -511,23 +511,23 @@ export default function SubscriptionPage() {
                     ? 'border-red-300 bg-red-50'
                     : paymentMethod?.status === 'ok'
                       ? 'border-emerald-200 bg-emerald-50'
-                      : 'border-slate-200 bg-slate-50'
+                      : 'border-gray-200 bg-gray-50'
                 }`}
               >
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-gray-800">
                   {paymentMethodShortLabel}
                 </p>
                 {paymentMethodExpiryLabel ? (
-                  <p className="mt-1 text-xs font-medium text-slate-600">
+                  <p className="mt-1 text-xs font-medium text-gray-600">
                     {paymentMethodExpiryLabel}
                   </p>
                 ) : null}
                 {paymentMethod?.holderName ? (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-gray-500">
                     Card holder: {paymentMethod.holderName}
                   </p>
                 ) : null}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-gray-500">
                   {paymentMethod?.status === 'expired'
                     ? 'Card is expired. Update now to avoid failed renewals.'
                     : latestFailedPayment
@@ -557,7 +557,7 @@ export default function SubscriptionPage() {
             <h3 className="text-base font-semibold">Plan Benefits</h3>
           </div>
 
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+          <ul className="mt-4 space-y-2 text-sm text-gray-700">
             {(currentPlan?.features?.length
               ? currentPlan.features
               : [
@@ -584,40 +584,38 @@ export default function SubscriptionPage() {
 
         {isPaymentHistoryLoading ? (
           <div className="space-y-2">
-            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-10 animate-pulse rounded-md bg-gray-100" />
+            <div className="h-10 animate-pulse rounded-md bg-gray-100" />
+            <div className="h-10 animate-pulse rounded-md bg-gray-100" />
           </div>
         ) : paymentHistory.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            No payment history found yet.
-          </p>
+          <p className="text-sm text-gray-500">No payment history found yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50">
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Date
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Amount
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Status
                   </th>
-                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-slate-600">
+                  <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-[1.4px] text-gray-600">
                     Receipt
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {paymentHistory.slice(0, 10).map((payment) => (
                   <tr key={payment.id}>
-                    <td className="px-4 py-2 text-slate-700">
+                    <td className="px-4 py-2 text-gray-700">
                       {formatPaymentDate(payment.createdAt)}
                     </td>
-                    <td className="px-4 py-2 text-slate-700">
+                    <td className="px-4 py-2 text-gray-700">
                       {asMoney(payment.payableAmount, payment.currency)}
                     </td>
                     <td className="px-4 py-2">
@@ -654,7 +652,7 @@ export default function SubscriptionPage() {
         onClose={() => setShowPlanChangeModal(false)}
       >
         {changeablePlans.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             No alternative plans available.
           </p>
         ) : (
@@ -669,13 +667,11 @@ export default function SubscriptionPage() {
                   className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
                     isSelected
                       ? 'border-brand-500 bg-brand-50'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                      : 'border-gray-200 bg-white hover:bg-gray-50'
                   }`}
                 >
-                  <div className="font-semibold text-slate-800">
-                    {plan.name}
-                  </div>
-                  <div className="text-xs font-medium text-slate-500">
+                  <div className="font-semibold text-gray-800">{plan.name}</div>
+                  <div className="text-xs font-medium text-gray-500">
                     {asMoney(plan.price, plan.currency)} |{' '}
                     {plan.isFree ? 'Free' : 'Paid'}
                   </div>
@@ -688,7 +684,7 @@ export default function SubscriptionPage() {
           <button
             type="button"
             onClick={() => setShowPlanChangeModal(false)}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
           >
             Cancel
           </button>
@@ -716,11 +712,11 @@ export default function SubscriptionPage() {
           <textarea
             value={cancelReason}
             onChange={(event) => setCancelReason(event.target.value)}
-            className="min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-brand-500"
+            className="min-h-24 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-brand-500"
             placeholder="Reason for cancellation"
           />
 
-          <label className="flex items-start gap-2 text-sm text-slate-600">
+          <label className="flex items-start gap-2 text-sm text-gray-600">
             <input
               type="checkbox"
               checked={cancelImmediately}
@@ -734,7 +730,7 @@ export default function SubscriptionPage() {
           <button
             type="button"
             onClick={() => setShowCancelModal(false)}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
           >
             Close
           </button>

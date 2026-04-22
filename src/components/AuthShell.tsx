@@ -14,7 +14,7 @@ const AuthShell = ({
   description,
 }: AuthHeroSectionProps) => {
   return (
-    <section className="fixed left-0 top-0 hidden lg:block h-dvh w-1/2 overflow-hidden bg-slate-950">
+    <section className="fixed left-0 top-0 hidden lg:block h-dvh w-1/2 overflow-hidden bg-gray-950">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{

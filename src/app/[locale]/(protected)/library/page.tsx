@@ -64,21 +64,19 @@ export default function LibraryPage() {
 
   return (
     <section className="space-y-6">
-      <article className="rounded-xl border border-neutral-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">
+      <article className="rounded-xl border border-gray-200 bg-white p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
           My Library
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm text-gray-600">
           Continue ongoing reads, revisit recently opened books, and jump to
           titles you have already completed.
         </p>
       </article>
 
-      <article className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
+      <article className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-slate-900">
-            Library Books
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Library Books</h2>
           {isFetching && !isLoading ? (
             <span className="text-xs font-medium text-brand-600">
               Refreshing...
@@ -87,7 +85,7 @@ export default function LibraryPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-slate-500">Loading your library...</p>
+          <p className="text-sm text-gray-500">Loading your library...</p>
         ) : null}
 
         {isError ? (
@@ -97,7 +95,7 @@ export default function LibraryPage() {
         ) : null}
 
         {!isLoading && !isError && books.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
             Your library is empty for now. Explore search and start reading a
             title.
           </p>
@@ -113,17 +111,17 @@ export default function LibraryPage() {
             return (
               <article
                 key={book.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-gray-200 bg-gray-50 p-4"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-2">
-                    <h3 className="text-base font-semibold text-slate-900">
+                    <h3 className="text-base font-semibold text-gray-900">
                       {book.title}
                     </h3>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-gray-600">
                       {authorLine || 'Author details unavailable'}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
                       <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1">
                         <Clock3 className="size-3.5" />
                         Last opened:{' '}
@@ -137,10 +135,10 @@ export default function LibraryPage() {
 
                   <div className="flex w-full gap-3 md:w-auto md:min-w-56 md:items-center">
                     <div className="flex-1">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         Progress
                       </p>
-                      <div className="mt-2 h-2 rounded-full bg-slate-200">
+                      <div className="mt-2 h-2 rounded-full bg-gray-200">
                         <div
                           className="h-2 rounded-full bg-brand-600"
                           style={{

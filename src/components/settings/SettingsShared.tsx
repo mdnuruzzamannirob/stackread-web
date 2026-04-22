@@ -120,7 +120,7 @@ export const getStatusToneClass = (status: string) => {
     case 'cancelled':
       return 'border-red-500/30 bg-red-500/10 text-red-700'
     default:
-      return 'border-slate-300 bg-slate-100 text-slate-700'
+      return 'border-gray-300 bg-gray-100 text-gray-700'
   }
 }
 
@@ -141,7 +141,7 @@ export function SectionTitle({
         className={`h-1 w-8 rounded-full ${tone === 'danger' ? 'bg-red-600' : 'bg-brand-700'}`}
       />
       <h2
-        className={`text-sm font-semibold uppercase tracking-[2.8px] ${tone === 'danger' ? 'text-red-700' : 'text-slate-700'}`}
+        className={`text-sm font-semibold uppercase tracking-[2.8px] ${tone === 'danger' ? 'text-red-700' : 'text-gray-700'}`}
       >
         {text}
       </h2>
@@ -162,7 +162,7 @@ export function PreferenceToggle({
       aria-pressed={checked}
       onClick={onToggle}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        checked ? 'bg-brand-700' : 'bg-slate-300'
+        checked ? 'bg-brand-700' : 'bg-gray-300'
       }`}
     >
       <span
@@ -203,7 +203,7 @@ export function Modal({
 }
 
 export function SkeletonRow() {
-  return <div className="h-11 animate-pulse rounded-md bg-slate-200" />
+  return <div className="h-11 animate-pulse rounded-md bg-gray-200" />
 }
 
 export function StatusIcon({ enabled }: { enabled: boolean }) {
@@ -223,12 +223,10 @@ export function SettingsPageHeader({
 }) {
   return (
     <header className="space-y-2">
-      <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+      <h2 className="text-3xl font-bold tracking-tight text-gray-900">
         {title}
       </h2>
-      <p className="max-w-3xl text-sm leading-6 text-slate-600">
-        {description}
-      </p>
+      <p className="max-w-3xl text-sm leading-6 text-gray-600">{description}</p>
     </header>
   )
 }
@@ -243,7 +241,7 @@ export function SettingsCard({
   return (
     <article
       className={cn(
-        'rounded-xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6',
+        'rounded-xl border border-gray-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6',
         className,
       )}
     >

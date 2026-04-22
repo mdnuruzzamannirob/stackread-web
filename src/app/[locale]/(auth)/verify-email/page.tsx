@@ -105,7 +105,7 @@ const VerifyResetEmailPage = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Verify Reset Code
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Enter the 6-digit code sent to{' '}
                   <span className="font-medium text-gray-900">
                     {emailInFlow}

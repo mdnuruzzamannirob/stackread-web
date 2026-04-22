@@ -129,7 +129,7 @@ const TwoFactorAuthenticationEmail = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Verify with Email
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Enter the 6-digit code we sent to your email address to
                   continue.
                 </p>

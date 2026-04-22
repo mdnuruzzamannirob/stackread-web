@@ -187,15 +187,15 @@ export default function BookDetailsPage() {
 
   if (isLoading) {
     return (
-      <section className="rounded-xl border border-neutral-200 bg-white p-6">
-        <p className="text-sm text-slate-500">Loading book details...</p>
+      <section className="rounded-xl border border-gray-200 bg-white p-6">
+        <p className="text-sm text-gray-500">Loading book details...</p>
       </section>
     )
   }
 
   if (isError || !book) {
     return (
-      <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
+      <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
         <p className="text-sm text-red-600">
           Unable to load this book right now.
         </p>
@@ -212,16 +212,16 @@ export default function BookDetailsPage() {
 
   return (
     <section className="space-y-6">
-      <article className="rounded-xl border border-neutral-200 bg-white p-6">
+      <article className="rounded-xl border border-gray-200 bg-white p-6">
         <div className="grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <div className="relative h-64 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+          <div className="relative h-64 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
             {book.coverImage?.url ? (
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${book.coverImage.url})` }}
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <BookOpen className="size-10" />
               </div>
             )}
@@ -232,7 +232,7 @@ export default function BookDetailsPage() {
               <span className="rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700">
                 {book.accessLevel}
               </span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
                 {book.language.toUpperCase()}
               </span>
               <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
@@ -240,24 +240,24 @@ export default function BookDetailsPage() {
               </span>
             </div>
 
-            <h1 className="mt-3 text-2xl font-semibold text-slate-900 sm:text-3xl">
+            <h1 className="mt-3 text-2xl font-semibold text-gray-900 sm:text-3xl">
               {book.title}
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-gray-600">
               {authorNames || 'Author details unavailable'}
             </p>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-gray-600">
               {book.description ?? book.summary}
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500">
-              <span className="rounded-full bg-slate-100 px-2.5 py-1">
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-500">
+              <span className="rounded-full bg-gray-100 px-2.5 py-1">
                 Published: {formatDateLabel(book.publicationDate, locale)}
               </span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1">
+              <span className="rounded-full bg-gray-100 px-2.5 py-1">
                 Pages: {book.pageCount ?? 'n/a'}
               </span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1">
+              <span className="rounded-full bg-gray-100 px-2.5 py-1">
                 Categories: {categoryNames || 'n/a'}
               </span>
             </div>
@@ -290,9 +290,9 @@ export default function BookDetailsPage() {
       </article>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <article className="rounded-xl border border-neutral-200 bg-white p-6">
-          <h2 className="text-xl font-semibold text-slate-900">Reviews</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <article className="rounded-xl border border-gray-200 bg-white p-6">
+          <h2 className="text-xl font-semibold text-gray-900">Reviews</h2>
+          <p className="mt-1 text-sm text-gray-500">
             Reader feedback for this title.
           </p>
 
@@ -300,24 +300,24 @@ export default function BookDetailsPage() {
             {reviews.map((review) => (
               <article
                 key={review.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-gray-200 bg-gray-50 p-4"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-gray-900">
                     {review.title ?? 'Reader review'}
                   </p>
                   <span className="text-xs font-semibold text-amber-600">
                     {review.rating.toFixed(1)} ★
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-gray-600">
                   {review.comment}
                 </p>
               </article>
             ))}
 
             {!reviews.length ? (
-              <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+              <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
                 No reviews submitted for this title yet.
               </p>
             ) : null}
@@ -325,36 +325,36 @@ export default function BookDetailsPage() {
         </article>
 
         <aside className="space-y-4">
-          <article className="rounded-xl border border-neutral-200 bg-white p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <article className="rounded-xl border border-gray-200 bg-white p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">
               Preview
             </h3>
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-gray-600">
               {preview?.summary ??
                 'Preview metadata is not available right now for this book.'}
             </p>
           </article>
 
-          <article className="rounded-xl border border-neutral-200 bg-white p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <article className="rounded-xl border border-gray-200 bg-white p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">
               Available Formats
             </h3>
             <div className="mt-3 space-y-2">
               {availableFormats.map((format) => (
                 <div
                   key={format}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
                 >
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-gray-900">
                     {format.toUpperCase()}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-gray-500">
                     {resolveFormatSupport(format)}
                   </p>
                 </div>
               ))}
               {!availableFormats.length ? (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-gray-500">
                   No readable files are available for this title.
                 </p>
               ) : null}

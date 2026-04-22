@@ -153,7 +153,7 @@ const OAuthCallbackPage = () => {
               <h1 className="text-2xl font-semibold sm:text-3xl">
                 Completing sign in...
               </h1>
-              <p className="mt-3 text-slate-500">
+              <p className="mt-3 text-gray-500">
                 Please wait while we finalize your Google or Facebook session.
               </p>
             </div>

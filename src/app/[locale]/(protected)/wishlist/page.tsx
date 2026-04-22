@@ -54,19 +54,19 @@ export default function WishlistPage() {
 
   return (
     <section className="space-y-6">
-      <article className="rounded-xl border border-neutral-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">
+      <article className="rounded-xl border border-gray-200 bg-white p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
           Wishlist
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm text-gray-600">
           Track books you want to read next and jump to details whenever you are
           ready to start.
         </p>
       </article>
 
-      <article className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
+      <article className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-slate-900">Saved Books</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Saved Books</h2>
           {isRefreshingWishlist && !isLoadingWishlist ? (
             <span className="text-xs font-medium text-brand-600">
               Refreshing...
@@ -75,7 +75,7 @@ export default function WishlistPage() {
         </div>
 
         {isLoadingWishlist ? (
-          <p className="text-sm text-slate-500">Loading your wishlist...</p>
+          <p className="text-sm text-gray-500">Loading your wishlist...</p>
         ) : null}
 
         {hasWishlistError ? (
@@ -85,7 +85,7 @@ export default function WishlistPage() {
         ) : null}
 
         {!isLoadingWishlist && !hasWishlistError && !wishlistItems.length ? (
-          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
             Wishlist is empty. Use search to save books for later.
           </p>
         ) : null}
@@ -103,28 +103,28 @@ export default function WishlistPage() {
             return (
               <article
                 key={item.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-gray-200 bg-gray-50 p-4"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-14 overflow-hidden rounded-md border border-slate-200 bg-white">
+                    <div className="relative h-20 w-14 overflow-hidden rounded-md border border-gray-200 bg-white">
                       {coverUrl ? (
                         <div
                           className="absolute inset-0 bg-cover bg-center"
                           style={{ backgroundImage: `url(${coverUrl})` }}
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-400">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400">
                           <Heart className="size-4" />
                         </div>
                       )}
                     </div>
 
                     <div>
-                      <h3 className="text-base font-semibold text-slate-900">
+                      <h3 className="text-base font-semibold text-gray-900">
                         {label}
                       </h3>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-gray-500">
                         {ratingLabel}
                       </p>
                     </div>

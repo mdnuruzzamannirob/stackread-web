@@ -112,7 +112,7 @@ const TwoFactorAuthentication = () => {
                 <h1 className="text-2xl font-semibold sm:text-3xl">
                   Choose Verification Method
                 </h1>
-                <p className="text-slate-500">
+                <p className="text-gray-500">
                   Choose a secondary verification method to maintain the
                   integrity of your curated collection.
                 </p>

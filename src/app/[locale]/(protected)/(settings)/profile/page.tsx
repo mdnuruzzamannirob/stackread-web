@@ -309,16 +309,16 @@ export default function ProfilePage() {
       <SettingsCard className="p-0">
         {isLoadingProfile ? (
           <div className="space-y-4 p-6">
-            <div className="h-28 w-28 animate-pulse rounded-xl bg-slate-200" />
-            <div className="h-11 animate-pulse rounded-md bg-slate-200" />
-            <div className="h-11 animate-pulse rounded-md bg-slate-200" />
-            <div className="h-11 animate-pulse rounded-md bg-slate-200" />
-            <div className="h-11 animate-pulse rounded-md bg-slate-200" />
+            <div className="h-28 w-28 animate-pulse rounded-xl bg-gray-200" />
+            <div className="h-11 animate-pulse rounded-md bg-gray-200" />
+            <div className="h-11 animate-pulse rounded-md bg-gray-200" />
+            <div className="h-11 animate-pulse rounded-md bg-gray-200" />
+            <div className="h-11 animate-pulse rounded-md bg-gray-200" />
           </div>
         ) : (
           <div className="grid gap-8 p-6 lg:grid-cols-[140px_minmax(0,1fr)]">
             <div className="space-y-3">
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#071b24] ring-1 ring-slate-200">
+              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#071b24] ring-1 ring-gray-200">
                 {profileState.profilePicture ? (
                   <img
                     src={profileState.profilePicture}
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                     onChange={(event) =>
                       handleFieldChange('firstName', event.target.value)
                     }
-                    className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-4 text-slate-800 outline-none transition focus:border-[#0a5b71]"
+                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
                   />
                 </label>
 
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                     onChange={(event) =>
                       handleFieldChange('lastName', event.target.value)
                     }
-                    className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-4 text-slate-800 outline-none transition focus:border-[#0a5b71]"
+                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
                   />
                 </label>
               </div>
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                   onChange={(event) =>
                     handleFieldChange('email', event.target.value)
                   }
-                  className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-4 text-slate-800 outline-none transition focus:border-[#0a5b71]"
+                  className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
                 />
               </label>
 
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     onChange={(event) =>
                       handleFieldChange('countryCode', event.target.value)
                     }
-                    className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-3 text-sm text-slate-700 outline-none transition focus:border-[#0a5b71]"
+                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-3 text-sm text-gray-700 outline-none transition focus:border-[#0a5b71]"
                   >
                     {COUNTRY_OPTIONS.map((country) => (
                       <option key={country.code} value={country.code}>
@@ -414,10 +414,10 @@ export default function ProfilePage() {
                       handleFieldChange('phone', event.target.value)
                     }
                     placeholder="(555) 019-2834"
-                    className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-4 text-slate-800 outline-none transition focus:border-[#0a5b71]"
+                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
                   />
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-gray-500">
                   Selected country: {selectedCountry?.name}
                 </p>
               </div>
@@ -432,7 +432,7 @@ export default function ProfilePage() {
                     handleFieldChange('address', event.target.value)
                   }
                   placeholder="Your full address"
-                  className="h-12 w-full rounded-md border border-slate-200 bg-[#edf1f3] px-4 text-slate-800 outline-none transition focus:border-[#0a5b71]"
+                  className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
                 />
               </label>
 
@@ -492,33 +492,33 @@ export default function ProfilePage() {
             className={`rounded-lg border border-dashed p-4 text-center transition ${
               isPhotoDragOver
                 ? 'border-brand-500 bg-brand-50'
-                : 'border-slate-300 bg-slate-50'
+                : 'border-gray-300 bg-gray-50'
             }`}
           >
-            <UploadCloud className="mx-auto size-5 text-slate-500" />
-            <p className="mt-2 text-sm font-semibold text-slate-700">
+            <UploadCloud className="mx-auto size-5 text-gray-500" />
+            <p className="mt-2 text-sm font-semibold text-gray-700">
               Drop your profile photo here
             </p>
-            <p className="text-xs text-slate-500">or choose one manually</p>
+            <p className="text-xs text-gray-500">or choose one manually</p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
             >
               <ImagePlus className="size-3.5" />
               Choose Image
             </button>
-            <p className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[11px] text-gray-500">
               JPG, PNG, WEBP, or GIF. Images are auto-optimized up to 512KB.
             </p>
           </div>
 
-          <div className="rounded-lg bg-slate-100 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="rounded-lg bg-gray-100 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
               Preview
             </p>
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-slate-200">
+              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-gray-200">
                 {photoPreview || profileState.profilePicture ? (
                   <img
                     src={photoPreview || profileState.profilePicture}
@@ -526,14 +526,14 @@ export default function ProfilePage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <UserRound className="size-4 text-slate-500" />
+                  <UserRound className="size-4 text-gray-500" />
                 )}
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-700">
+                <p className="text-xs font-semibold text-gray-700">
                   {photoFileName || 'No file selected'}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-gray-500">
                   {photoFileBase64
                     ? 'Ready to upload.'
                     : 'Select an image to enable upload.'}
@@ -547,7 +547,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={handleClosePhotoDialog}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
           >
             Cancel
           </button>

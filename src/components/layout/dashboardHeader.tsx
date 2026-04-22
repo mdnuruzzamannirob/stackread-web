@@ -63,14 +63,14 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
           <button
             type="button"
             onClick={toggleSidebar}
-            className="flex size-10 items-center justify-center rounded-2xl border border-border bg-white text-slate-500 shadow-sm transition hover:border-primary/25 hover:text-primary md:hidden"
+            className="flex size-10 items-center justify-center rounded-2xl border border-border bg-white text-gray-500 shadow-sm transition hover:border-primary/25 hover:text-primary md:hidden"
             aria-label={t('openSidebar')}
           >
             <Menu className="size-5" />
           </button>
 
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
+            <h1 className="text-xl font-semibold tracking-tight text-gray-900 md:text-2xl">
               {title}
             </h1>
           </div>
@@ -78,7 +78,7 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
 
         <div className="flex items-center gap-2 md:gap-3">
           <form
-            className="hidden items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 focus-within:border-brand-600 lg:flex"
+            className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 focus-within:border-gray-300 hover:border-gray-300 lg:flex"
             onSubmit={handleSearchSubmit}
           >
             <Search className="size-5" />
@@ -97,7 +97,7 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
           </form>
 
           <button
-            className="flex size-10 items-center justify-center rounded-lg border bg-white border-neutral-200 text-neutral-500 hover:text-brand-600 "
+            className="flex size-10 items-center justify-center rounded-lg border bg-white border-gray-200 hover:border-gray-300 duration-150 text-gray-500 hover:text-inherit"
             aria-label={t('toggleTheme')}
           >
             <Sun className="size-5" />
@@ -107,7 +107,7 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
 
           <Link
             href={`/${locale}/notifications`}
-            className="relative flex size-10 items-center justify-center rounded-lg border bg-white border-neutral-200 text-neutral-500 transition hover:text-brand-600"
+            className="relative flex size-10 items-center justify-center rounded-lg border bg-white border-gray-200 text-gray-500 transition hover:border-gray-300 hover:text-inherit"
             aria-label={t('openNotifications')}
           >
             <Bell className="size-5" />

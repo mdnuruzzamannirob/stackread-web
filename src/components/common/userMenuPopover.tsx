@@ -98,7 +98,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
       <PopoverTrigger>
         <button
           type="button"
-          className="inline-flex h-10 max-w-56 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2.5 text-left text-neutral-700 transition hover:border-brand-300 hover:text-brand-600"
+          className="inline-flex h-10 max-w-56 items-center gap-2 duration-150 rounded-lg border border-gray-200 bg-white px-2 text-left text-gray-500 transition hover:border-gray-300 hover:text-inherit"
           aria-label={t('open')}
         >
           <span className="inline-flex size-7 items-center justify-center rounded-md bg-brand-600 text-xs font-semibold text-white">
@@ -107,19 +107,19 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
           <span className="hidden truncate text-sm font-medium md:block">
             {fullName}
           </span>
-          <ChevronDown className="size-4 shrink-0 text-neutral-500" />
+          <ChevronDown className="size-4 shrink-0 text-gray-500" />
         </button>
       </PopoverTrigger>
 
       <PopoverContent className="w-72 p-0" align="end">
         <div className="space-y-2 p-3">
-          <p className="truncate text-sm font-semibold text-slate-900">
+          <p className="truncate text-sm font-semibold text-gray-900">
             {fullName}
           </p>
-          <p className="truncate text-xs text-slate-500">{email}</p>
+          <p className="truncate text-xs text-gray-500">{email}</p>
         </div>
 
-        <div className="border-t border-slate-200 px-2 py-2">
+        <div className="border-t border-gray-200 p-2">
           {menuLinks.map((link) => {
             const Icon = link.icon
 
@@ -127,7 +127,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-brand-100 hover:text-brand-700 last:mb-0"
+                className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-brand-100 hover:text-brand-700 last:mb-0"
               >
                 <Icon className="size-4" />
                 <span>{link.label}</span>
@@ -136,7 +136,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
           })}
         </div>
 
-        <div className="border-t border-slate-200 p-2">
+        <div className="border-t border-gray-200 p-2">
           <button
             type="button"
             onClick={handleLogout}

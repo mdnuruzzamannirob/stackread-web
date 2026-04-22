@@ -59,11 +59,11 @@ export default function ReadingBookmarksPage() {
 
   return (
     <section className="space-y-6">
-      <article className="rounded-xl border border-neutral-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">
+      <article className="rounded-xl border border-gray-200 bg-white p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
           Bookmarks
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm text-gray-600">
           Inspect bookmarks for a specific book. Select from your active reads
           or paste a book id directly.
         </p>
@@ -71,7 +71,7 @@ export default function ReadingBookmarksPage() {
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <label
             htmlFor="bookmark-book-id"
-            className="flex h-11 flex-1 items-center rounded-lg border border-neutral-200 bg-white px-3"
+            className="flex h-11 flex-1 items-center rounded-lg border border-gray-200 bg-white px-3"
           >
             <input
               id="bookmark-book-id"
@@ -102,22 +102,22 @@ export default function ReadingBookmarksPage() {
                   `/${locale}/reading/bookmarks?bookId=${encodeURIComponent(bookId)}`,
                 )
               }}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700"
+              className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-brand-300 hover:text-brand-700"
             >
               {bookId}
             </button>
           ))}
           {!isLoadingCurrent && !hasCurrentError && !currentBookIds.length ? (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-gray-500">
               No active reading entries found yet.
             </p>
           ) : null}
         </div>
       </article>
 
-      <article className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
+      <article className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-gray-900">
             Bookmark Entries
           </h2>
           {bookIdFromQuery ? (
@@ -132,13 +132,13 @@ export default function ReadingBookmarksPage() {
         </div>
 
         {!bookIdFromQuery ? (
-          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
             Select a book id first to load bookmarks.
           </p>
         ) : null}
 
         {bookIdFromQuery && isLoading ? (
-          <p className="text-sm text-slate-500">Loading bookmarks...</p>
+          <p className="text-sm text-gray-500">Loading bookmarks...</p>
         ) : null}
 
         {bookIdFromQuery && isError ? (
@@ -148,7 +148,7 @@ export default function ReadingBookmarksPage() {
         ) : null}
 
         {bookIdFromQuery && !isLoading && !isError && !bookmarks.length ? (
-          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
             No bookmarks found for this book yet.
           </p>
         ) : null}
@@ -157,17 +157,17 @@ export default function ReadingBookmarksPage() {
           {bookmarks.map((bookmark) => (
             <article
               key={bookmark.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              className="rounded-lg border border-gray-200 bg-gray-50 p-4"
             >
               <div className="flex items-center gap-2 text-brand-700">
                 <Bookmark className="size-4" />
                 <p className="text-sm font-semibold">{bookmark.location}</p>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-gray-500">
                 Page: {bookmark.page ?? 'n/a'}
               </p>
               {bookmark.note ? (
-                <p className="mt-2 text-sm text-slate-600">{bookmark.note}</p>
+                <p className="mt-2 text-sm text-gray-600">{bookmark.note}</p>
               ) : null}
             </article>
           ))}

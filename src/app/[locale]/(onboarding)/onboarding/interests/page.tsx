@@ -94,7 +94,7 @@ export default function OnboardingInterestsPage() {
       subtitle="Select your preferred genres to personalize your reading feed. Choose as many as you like to help us tailor recommendations to your unique tastes."
     >
       {isLoadingInterests ? (
-        <p className="text-sm text-slate-500">Loading interests...</p>
+        <p className="text-sm text-gray-500">Loading interests...</p>
       ) : isInterestsError ? (
         <div className="space-y-3">
           <p className="text-sm text-red-600">
@@ -103,7 +103,7 @@ export default function OnboardingInterestsPage() {
           <button
             type="button"
             onClick={() => refetch()}
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700"
           >
             Try again
           </button>
