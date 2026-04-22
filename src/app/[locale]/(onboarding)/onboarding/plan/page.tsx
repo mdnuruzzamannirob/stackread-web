@@ -38,16 +38,6 @@ const getFeaturesByAccessLevel = (
   accessLevel: string,
   features: string[],
 ): Feature[] => {
-  const allFeatures = [
-    'Access free books only',
-    'Web reader access',
-    'Reading progress sync',
-    'Highlights & annotations',
-    'Multi-device access',
-    'AI tools',
-    'Audiobook access',
-  ]
-
   if (accessLevel === 'free') {
     return [
       { label: 'Access free books only', available: true },
@@ -82,6 +72,23 @@ const getFeaturesByAccessLevel = (
       { label: 'Reading progress sync', available: true },
       { label: 'Highlights & annotations', available: true },
       {
+        label: `Multi-device access (up to ${features.find((f) => f.includes('devices')) || '3'})`,
+        available: true,
+      },
+      { label: 'AI tools (full access)', available: true },
+      { label: 'Audiobook access', available: true },
+    ]
+  }
+
+  // ✅ FIX: Added missing 'pro' case — previously fell through to default
+  // which returned wrong label "Access free books only" for Pro plan
+  if (accessLevel === 'pro') {
+    return [
+      { label: 'Access all books (free + pro + premium)', available: true },
+      { label: 'Web reader access', available: true },
+      { label: 'Reading progress sync', available: true },
+      { label: 'Highlights & annotations', available: true },
+      {
         label: `Multi-device access (up to ${features.find((f) => f.includes('devices')) || '5'})`,
         available: true,
       },
@@ -90,7 +97,15 @@ const getFeaturesByAccessLevel = (
     ]
   }
 
-  return allFeatures.map((f) => ({ label: f, available: true }))
+  return [
+    { label: 'Access all books', available: true },
+    { label: 'Web reader access', available: true },
+    { label: 'Reading progress sync', available: true },
+    { label: 'Highlights & annotations', available: true },
+    { label: 'Multi-device access', available: true },
+    { label: 'AI tools (full access)', available: true },
+    { label: 'Audiobook access', available: true },
+  ]
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -216,9 +231,10 @@ export default function OnboardingPlanSelectionPage() {
     if (selectedPlanCode === plan.code) {
       return `Selected ${selectedBillingCycle === 'yearly' ? 'yearly' : 'monthly'} billing. Select this plan again to retry payment.`
     }
-    return isAnnual
-      ? `$${(getPrice(plan) * 12).toFixed(2)} billed annually`
-      : 'Billed month to month'
+    if (isAnnual) {
+      return `${formatCurrencyAmount(getPrice(plan), plan.currency)} billed annually`
+    }
+    return 'Billed month to month'
   }
 
   const handlePlanClick = async (plan: UiPlan) => {
@@ -265,7 +281,7 @@ export default function OnboardingPlanSelectionPage() {
       title="Choose your plan"
       subtitle="Select the plan that fits your reading habits."
     >
-      {/* Billing Toggle — pasted 1 design */}
+      {/* Billing Toggle */}
       <div className="flex items-center justify-center gap-3 mb-16">
         <span
           className={cn(
@@ -389,9 +405,10 @@ export default function OnboardingPlanSelectionPage() {
                         /{isAnnual ? 'yr' : 'mo'}
                       </span>
                       {isAnnual && (
+                      
                         <span className="text-xs text-gray-500 line-through ml-1">
                           {formatCurrencyAmount(
-                            plan.monthlyPrice ?? 0,
+                            (plan.monthlyPrice ?? 0) * 12,
                             plan.currency,
                           )}
                         </span>
