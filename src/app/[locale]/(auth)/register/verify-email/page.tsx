@@ -3,6 +3,7 @@
 import AuthShell from '@/components/AuthShell'
 import OtpInputField from '@/components/OtpInputField'
 import { getApiErrorMessage } from '@/lib/api/error-message'
+import { applyAuthenticatedSession } from '@/lib/auth/client-session'
 import {
   useResendVerificationMutation,
   useVerifyEmailMutation,
@@ -53,7 +54,12 @@ const RegisterVerifyEmailPage = () => {
     }
 
     try {
-      await verifyEmail({ email: emailInFlow, otp }).unwrap()
+      const response = await verifyEmail({ email: emailInFlow, otp }).unwrap()
+
+      if (response.data) {
+        applyAuthenticatedSession(dispatch, response.data)
+      }
+
       dispatch(clearAuthFlow())
       toast.success('Email verified successfully.')
       router.push(`/${locale}/onboarding/welcome`)

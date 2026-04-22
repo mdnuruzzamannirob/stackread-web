@@ -2,15 +2,13 @@
 
 import { Check, Globe2, Languages } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { cn } from '@/lib/utils'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
-
-const storageKey = 'stackread:onboarding-language'
 
 const languageOptions = [
   {
@@ -32,27 +30,26 @@ export default function OnboardingLanguagePage() {
   const params = useParams<{ locale: string }>()
   const locale = params.locale ?? 'en'
   const router = useRouter()
+  const { data: statusResponse } = onboardingApi.useGetOnboardingStatusQuery()
   const [saveLanguage, { isLoading }] =
     onboardingApi.useSaveOnboardingLanguageMutation()
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'bn'>(() => {
-    if (typeof window === 'undefined') {
-      return 'en'
-    }
-
-    const stored = window.localStorage.getItem(storageKey)
-    if (stored === 'en' || stored === 'bn') {
-      return stored
-    }
-
+    if (typeof window === 'undefined') return 'en'
     const browserLanguage = window.navigator.language.toLowerCase()
     return browserLanguage.startsWith('bn') ? 'bn' : 'en'
   })
+
+  useEffect(() => {
+    const language = statusResponse?.data?.selectedLanguage
+    if (language === 'en' || language === 'bn') {
+      setSelectedLanguage(language)
+    }
+  }, [statusResponse])
 
   const continueToNextStep = () => {
     void (async () => {
       try {
         await saveLanguage({ language: selectedLanguage }).unwrap()
-        window.localStorage.setItem(storageKey, selectedLanguage)
         router.push(`/${locale}/onboarding/plan`)
       } catch (error) {
         toast.error(
@@ -65,7 +62,6 @@ export default function OnboardingLanguagePage() {
     })()
   }
   const persistAndBack = () => {
-    window.localStorage.setItem(storageKey, JSON.stringify(selectedLanguage))
     router.push(`/${locale}/onboarding/interests`)
   }
 

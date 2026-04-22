@@ -98,7 +98,10 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    verifyEmail: builder.mutation<ApiEnvelope<null>, VerifyEmailBody>({
+    verifyEmail: builder.mutation<
+      ApiEnvelope<UserSessionPayload>,
+      VerifyEmailBody
+    >({
       query: (body) => ({
         url: '/auth/verify-email',
         method: 'POST',

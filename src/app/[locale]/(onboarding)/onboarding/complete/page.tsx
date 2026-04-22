@@ -6,12 +6,7 @@ import { getApiErrorMessage } from '@/lib/api/error-message'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
 import { BookOpen, Globe2, Layers } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-
-// ─── Storage keys ─────────────────────────────────────────────────────────────
-const INTERESTS_KEY = 'stackread:onboarding-interests'
-const LANGUAGE_KEY = 'stackread:onboarding-language'
 
 // ─── Interest labels ──────────────────────────────────────────────────────────
 const INTEREST_LABELS: Record<string, string> = {
@@ -23,28 +18,6 @@ const INTEREST_LABELS: Record<string, string> = {
   philosophy: 'Philosophy',
   'art-design': 'Art',
   technology: 'Tech',
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function readInterests(): string[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = window.localStorage.getItem(INTERESTS_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
-    if (Array.isArray(parsed))
-      return parsed.filter((x): x is string => typeof x === 'string')
-  } catch {
-    /* ignore */
-  }
-  return []
-}
-
-function readLanguage(): 'en' | 'bn' {
-  if (typeof window === 'undefined') return 'en'
-  const stored = window.localStorage.getItem(LANGUAGE_KEY)
-  if (stored === 'en' || stored === 'bn') return stored
-  return 'en'
 }
 
 function formatInterests(codes: string[]): string {
@@ -59,16 +32,9 @@ export default function OnboardingCompletePage() {
   const params = useParams<{ locale: string }>()
   const locale = params?.locale ?? 'en'
   const router = useRouter()
-
-  const [interests, setInterests] = useState<string[]>([])
-  const [language, setLanguage] = useState<'en' | 'bn'>('en')
+  const { data: statusResponse } = onboardingApi.useGetOnboardingStatusQuery()
   const [completeOnboarding, { isLoading }] =
     onboardingApi.useCompleteOnboardingMutation()
-
-  useEffect(() => {
-    setInterests(readInterests())
-    setLanguage(readLanguage())
-  }, [])
 
   // const handleStart = () => {
   //   window.localStorage.removeItem(INTERESTS_KEY)
@@ -80,8 +46,6 @@ export default function OnboardingCompletePage() {
     void (async () => {
       try {
         await completeOnboarding({ agreeToTerms: true }).unwrap()
-        window.localStorage.removeItem(INTERESTS_KEY)
-        window.localStorage.removeItem(LANGUAGE_KEY)
         router.push(`/${locale}/dashboard`)
       } catch (error) {
         toast.error(getApiErrorMessage(error, 'Unable to complete onboarding.'))
@@ -89,11 +53,27 @@ export default function OnboardingCompletePage() {
     })()
   }
 
+  const status = statusResponse?.data
+  const interests = Array.isArray(status?.interests) ? status.interests : []
+  const language = status?.selectedLanguage
+  const selectedOn = status?.selectedAt
+    ? new Date(status.selectedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'Not available'
+
   const summary = [
     {
       icon: Globe2,
       label: 'Language',
-      value: language === 'bn' ? 'বাংলা' : 'English',
+      value:
+        language === 'bn'
+          ? 'বাংলা'
+          : language === 'en'
+            ? 'English'
+            : 'Not selected',
     },
     {
       icon: Layers,
@@ -103,7 +83,14 @@ export default function OnboardingCompletePage() {
     {
       icon: BookOpen,
       label: 'Plan',
-      value: 'Premium Curator',
+      value: status?.selectedPlanName
+        ? `${status.selectedPlanName} (USD ${status.selectedPlanPrice ?? 0})`
+        : 'Not selected',
+    },
+    {
+      icon: BookOpen,
+      label: 'Selected',
+      value: selectedOn,
     },
   ]
 
@@ -118,7 +105,7 @@ export default function OnboardingCompletePage() {
       <hr className="border-gray-200" />
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 gap-6 py-10">
+      <div className="grid grid-cols-2 gap-6 py-10 sm:grid-cols-4">
         {summary.map((item) => {
           const Icon = item.icon
           return (

@@ -1,12 +1,14 @@
 'use client'
 
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
+import { getApiErrorMessage } from '@/lib/api/error-message'
 import { cn } from '@/lib/utils'
 import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
 import { useGetPlansQuery } from '@/store/features/subscriptions/subscriptionsApi'
 import { Loader2, Star } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 type BillingCycle = 'monthly' | 'annually'
 
@@ -123,7 +125,7 @@ function CrossIcon() {
 
 export default function OnboardingPlanSelectionPage() {
   const params = useParams<{ locale: string }>()
-  const locale = params.locale ?? 'en'
+  const locale = (params.locale === 'bn' ? 'bn' : 'en') as 'en' | 'bn'
   const router = useRouter()
   const [billing, setBilling] = useState<BillingCycle>('monthly')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -176,37 +178,34 @@ export default function OnboardingPlanSelectionPage() {
     setIsProcessing(true)
 
     try {
-      await selectPlan({ planCode: plan.code }).unwrap()
+      const response = await selectPlan({
+        planCode: plan.code,
+        locale,
+      }).unwrap()
 
-      if (plan.free) {
-        const searchParams = new URLSearchParams({
-          plan_id: plan.code,
-          plan_name: plan.name,
-          billing_cycle: billing,
-          price: '0.00',
-          currency: 'USD',
-          is_free: 'true',
-        })
+      const data = response.data
 
-        router.push(
-          `/${locale}/onboarding/payment/success?${searchParams.toString()}`,
-        )
-      } else {
-        const price = getPrice(plan)
-        const searchParams = new URLSearchParams({
-          plan_id: plan.code,
-          plan_name: plan.name,
-          billing_cycle: billing,
-          price: price?.toFixed(2) ?? '0.00',
-          currency: 'USD',
-        })
-
-        router.push(
-          `/${locale}/onboarding/payment/pending?${searchParams.toString()}`,
-        )
+      if (!data) {
+        throw new Error('Plan selection response is empty.')
       }
+
+      if (data.nextStep === 'onboarding_completed') {
+        router.push(`/${locale}/onboarding/complete`)
+        return
+      }
+
+      const checkoutUrl = data.checkout_url ?? data.url
+
+      if (!checkoutUrl) {
+        throw new Error('Checkout URL is missing in response.')
+      }
+
+      window.location.href = checkoutUrl
     } catch (error) {
-      console.error('Error selecting plan:', error)
+      toast.error(
+        getApiErrorMessage(error, 'Unable to continue with selected plan.'),
+      )
+    } finally {
       setIsProcessing(false)
     }
   }

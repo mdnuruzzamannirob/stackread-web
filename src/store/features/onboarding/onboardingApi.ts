@@ -14,11 +14,22 @@ export type OnboardingStatus = 'pending' | 'selected' | 'completed'
 export type OnboardingStatusResponse = {
   status: OnboardingStatus
   selectedPlanCode?: string
+  selectedPlanName?: string
+  selectedPlanPrice?: number
+  selectedAt?: string
+  interests?: string[]
+  selectedLanguage?: string
   completedAt?: string
+}
+
+export type OnboardingInterestOption = {
+  code: string
+  label: string
 }
 
 export type SelectOnboardingPlanBody = {
   planCode: string
+  locale?: 'en' | 'bn'
 }
 
 export type CompleteOnboardingBody = {
@@ -59,6 +70,7 @@ export type SelectOnboardingPlanResponse = {
   status: OnboardingStatus
   nextStep: 'redirect_to_payment' | 'onboarding_completed'
   checkout_url?: string
+  redirectUrl?: string
   url?: string
   sessionId?: string
   paymentId?: string
@@ -79,6 +91,16 @@ export const onboardingApi = baseApi.injectEndpoints({
     >({
       query: () => ({
         url: '/onboarding/status',
+        method: 'GET',
+      }),
+      providesTags: ['Onboarding'],
+    }),
+    getOnboardingInterests: builder.query<
+      ApiEnvelope<OnboardingInterestOption[]>,
+      void
+    >({
+      query: () => ({
+        url: '/onboarding/interests',
         method: 'GET',
       }),
       providesTags: ['Onboarding'],
@@ -144,6 +166,7 @@ export const onboardingApi = baseApi.injectEndpoints({
 export const {
   useGetOnboardingPlansQuery,
   useGetOnboardingStatusQuery,
+  useGetOnboardingInterestsQuery,
   useLazyGetOnboardingStatusQuery,
   useSelectOnboardingPlanMutation,
   useSaveOnboardingInterestsMutation,

@@ -1,13 +1,12 @@
 'use client'
 
+import { getApiErrorMessage } from '@/lib/api/error-message'
 import { cn } from '@/lib/utils'
-import {
-  useGetPlansQuery,
-  useInitiateStripePaymentMutation,
-} from '@/store/features/subscriptions/subscriptionsApi'
+import { onboardingApi } from '@/store/features/onboarding/onboardingApi'
 import { CreditCard, Globe, LayoutGrid, RefreshCw } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 // ------- types -------
 type Stage = 'failed' | 'redirecting'
@@ -56,11 +55,10 @@ function readableReason(code: string): string {
 // ------- main component -------
 export default function OnboardingPaymentFailedPage() {
   const params = useParams<{ locale: string }>()
-  const locale = params?.locale ?? 'en'
+  const locale = (params?.locale === 'bn' ? 'bn' : 'en') as 'en' | 'bn'
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: plansResponse } = useGetPlansQuery()
-  const [initiatePayment] = useInitiateStripePaymentMutation()
+  const [selectPlan] = onboardingApi.useSelectOnboardingPlanMutation()
 
   const [stage, setStage] = useState<Stage>('failed')
   const [error, setError] = useState<StripeErrorInfo | null>(null)
@@ -72,7 +70,7 @@ export default function OnboardingPaymentFailedPage() {
   // cancel_url: `${origin}/${locale}/onboarding/payment-failed?plan_id=premium&price=14.99`
   useEffect(() => {
     const sessionId = searchParams.get('session_id') ?? ''
-    const planId = searchParams.get('plan_id') ?? 'premium'
+    const planName = searchParams.get('plan_name') ?? 'Premium'
     const price = searchParams.get('price') ?? '14.99'
     const code = searchParams.get('error_code') ?? 'card_declined'
 
@@ -83,7 +81,7 @@ export default function OnboardingPaymentFailedPage() {
       code,
       reason: readableReason(code),
       cardLast4: searchParams.get('card_last4'),
-      planName: planId.charAt(0).toUpperCase() + planId.slice(1),
+      planName,
       planPrice: `$${price}/mo`,
     })
   }, [searchParams])
@@ -95,28 +93,33 @@ export default function OnboardingPaymentFailedPage() {
     setStage('redirecting')
 
     try {
-      const selectedPlan = plansResponse?.data?.find(
-        (plan) =>
-          plan.code === (searchParams.get('plan_id') ?? '').toUpperCase(),
-      )
+      const planCode = (searchParams.get('plan_id') ?? '').toUpperCase()
 
-      if (!selectedPlan) {
-        throw new Error('Plan not found')
+      if (!planCode) {
+        throw new Error('Plan code not found')
       }
 
-      const res = await initiatePayment({
-        planId: selectedPlan.id,
-        gateway: 'stripe',
-        autoRenew: true,
+      const response = await selectPlan({
+        planCode,
+        locale,
       }).unwrap()
 
-      const url =
-        res.data?.checkout_url || res.data?.redirectUrl || res.data?.url
+      const data = response.data
+      const url = data?.checkout_url || data?.redirectUrl || data?.url
 
-      if (!url) throw new Error('No checkout URL returned')
+      if (!url) {
+        if (data?.nextStep === 'onboarding_completed') {
+          router.push(`/${locale}/onboarding/complete`)
+          return
+        }
+        throw new Error('No checkout URL returned')
+      }
+
       window.location.href = url
-    } catch {
-      // If session creation fails, send back to failed page
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, 'Failed to create a new checkout session.'),
+      )
       setStage('failed')
     }
   }
