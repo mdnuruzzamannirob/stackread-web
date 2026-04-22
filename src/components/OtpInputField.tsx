@@ -37,15 +37,6 @@ const OtpInputField = ({
         )
       : internalOtp
 
-  const value = otp.join('')
-
-  useEffect(() => {
-    onChange?.(value)
-    if (value.length === length && otp.every((d) => d !== '')) {
-      onComplete?.(value)
-    }
-  }, [length, onChange, onComplete, otp, value])
-
   useEffect(() => {
     if (autoFocus) inputRefs.current[0]?.focus()
   }, [autoFocus])
@@ -60,8 +51,24 @@ const OtpInputField = ({
     isProgrammaticFocus.current = false
   }
 
+  const emitOtp = (nextOtp: string[]) => {
+    const nextValue = nextOtp.join('')
+    onChange?.(nextValue)
+    if (nextValue.length === length && nextOtp.every((d) => d !== '')) {
+      onComplete?.(nextValue)
+    }
+  }
+
+  const commitOtp = (updater: (prev: string[]) => string[]) => {
+    const nextOtp = updater([...otp])
+    if (externalValue === undefined) {
+      setInternalOtp(nextOtp)
+    }
+    emitOtp(nextOtp)
+  }
+
   const setDigitAtIndex = (index: number, digit: string) => {
-    setInternalOtp((prev) => {
+    commitOtp((prev) => {
       const next = [...prev]
       next[index] = digit
       return next
@@ -77,7 +84,7 @@ const OtpInputField = ({
     }
 
     if (digits.length > 1) {
-      setInternalOtp((prev) => {
+      commitOtp((prev) => {
         const next = [...prev]
         digits
           .slice(0, length)
@@ -136,13 +143,9 @@ const OtpInputField = ({
     const char = event.data ?? ''
     if (!/^\d$/.test(char)) return
 
-
-    if (otp[index] !== '') {
-      event.preventDefault()
-      setDigitAtIndex(index, char)
-      if (index < length - 1) focusIndex(index + 1)
-    }
-
+    event.preventDefault()
+    setDigitAtIndex(index, char)
+    if (index < length - 1) focusIndex(index + 1)
   }
 
   const handlePaste = (
@@ -153,7 +156,7 @@ const OtpInputField = ({
     const pastedValue = event.clipboardData.getData('text').replace(/\D/g, '')
     if (!pastedValue) return
 
-    setInternalOtp((prev) => {
+    commitOtp((prev) => {
       const next = [...prev]
       pastedValue
         .slice(0, length - index)
@@ -203,10 +206,10 @@ const OtpInputField = ({
                 inputRefs.current[index] = el
               }}
               value={otp[index]}
-              type="tel"
+              type="text"
               inputMode="numeric"
               autoComplete={index === 0 ? 'one-time-code' : 'off'}
-              maxLength={length}
+              maxLength={1}
               disabled={disabled}
               aria-label={`OTP digit ${index + 1}`}
               aria-invalid={error}

@@ -59,7 +59,7 @@ const LoginPage = () => {
         dispatch(setEmailInFlow(data.email))
         dispatch(setLoginOutcome(response.data))
         persistTempToken(response.data.tempToken)
-        router.push(`/${locale}/2fa`)
+        router.push(`/${locale}/login/2fa`)
       } else {
         applyAuthenticatedSession(dispatch, {
           token: response.data.token,

@@ -32,7 +32,7 @@ const TwoFactorAuthentication = () => {
 
               <div className="space-y-3">
                 <Link
-                  href={`/${locale}/2fa/totp`}
+                  href={`/${locale}/login/2fa/totp`}
                   className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
                 >
                   <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
@@ -65,7 +65,7 @@ const TwoFactorAuthentication = () => {
                 </Link>
 
                 <Link
-                  href={`/${locale}/2fa/email`}
+                  href={`/${locale}/login/2fa/email`}
                   className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
                 >
                   <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">
@@ -98,7 +98,7 @@ const TwoFactorAuthentication = () => {
                 </Link>
 
                 <Link
-                  href={`/${locale}/2fa/backup-code`}
+                  href={`/${locale}/login/2fa/recovery`}
                   className="relative group flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:border-teal-600 hover:bg-white hover:ring-[2.5px] hover:ring-teal-600/10 cursor-pointer"
                 >
                   <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-200 transition-colors duration-150 group-hover:bg-teal-600">

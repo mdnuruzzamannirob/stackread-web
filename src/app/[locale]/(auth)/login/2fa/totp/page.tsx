@@ -121,7 +121,7 @@ const TwoFactorAuthenticationTOTP = () => {
                 <p className="mt-4 text-center text-sm text-gray-500">
                   Can&apos;t access your authenticator?{' '}
                   <Link
-                    href={`/${locale}/2fa`}
+                    href={`/${locale}/login/2fa`}
                     className="font-medium text-teal-700 hover:underline"
                   >
                     Try another method

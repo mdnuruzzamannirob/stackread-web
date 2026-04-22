@@ -81,7 +81,7 @@ export async function resolveAuthenticatedDestination({
   const me = await fetchMe(accessToken)
 
   if (me && !me.isEmailVerified) {
-    return `/${locale}/verify-email`
+    return `/${locale}/register/verify-email`
   }
 
   return resolvePostAuthDestination({ locale, onboardingStatus })

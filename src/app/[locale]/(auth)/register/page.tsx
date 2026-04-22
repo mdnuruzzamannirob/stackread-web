@@ -60,7 +60,7 @@ const RegisterPage = () => {
       if (response.data) {
         dispatch(setEmailInFlow(data.email))
         toast.success('Registration successful! Verify your email.')
-        router.push(`/${locale}/verify-email`)
+        router.push(`/${locale}/register/verify-email`)
       }
     } catch (error) {
       const errorMessage = getApiErrorMessage(

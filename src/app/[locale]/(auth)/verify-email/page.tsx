@@ -4,34 +4,34 @@ import AuthShell from '@/components/AuthShell'
 import OtpInputField from '@/components/OtpInputField'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import {
-  useResendVerificationMutation,
-  useVerifyEmailMutation,
+  useResendResetOtpMutation,
+  useVerifyResetOtpMutation,
 } from '@/store/features/auth/authApi'
-import { setEmailInFlow } from '@/store/features/auth/authSlice'
+import { setResetToken } from '@/store/features/auth/authSlice'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-
 const RESEND_SECONDS = 30
 
-const VerifyEmail = () => {
+const VerifyResetEmailPage = () => {
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
   const dispatch = useAppDispatch()
   const emailInFlow = useAppSelector((state) => state.auth.emailInFlow)
 
-  const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation()
-  const [resendVerification, { isLoading: isResending }] =
-    useResendVerificationMutation()
+  const [verifyResetOtp, { isLoading: isVerifying }] =
+    useVerifyResetOtpMutation()
+  const [resendResetOtp, { isLoading: isResending }] =
+    useResendResetOtpMutation()
 
   const [sent, setSent] = useState(false)
   const [otp, setOtp] = useState('')
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS)
-
+  console.log(otp)
   useEffect(() => {
     if (secondsLeft <= 0) {
       return
@@ -48,14 +48,22 @@ const VerifyEmail = () => {
     event.preventDefault()
 
     if (!emailInFlow) {
-      toast.error('Email not found. Please start registration again.')
+      toast.error('Email not found. Please start forgot password again.')
+      router.replace(`/${locale}/forgot-password`)
       return
     }
 
     try {
-      await verifyEmail({ email: emailInFlow, otp }).unwrap()
-      toast.success('Email verified successfully.')
-      router.push(`/${locale}/onboarding/welcome`)
+      const response = await verifyResetOtp({
+        email: emailInFlow,
+        otp,
+      }).unwrap()
+
+      if (response.data?.resetToken) {
+        dispatch(setResetToken(response.data.resetToken))
+        toast.success('Code verified successfully.')
+        router.push(`/${locale}/reset-password`)
+      }
     } catch (error) {
       toast.error(
         getApiErrorMessage(error, 'Verification failed. Please try again.'),
@@ -65,21 +73,19 @@ const VerifyEmail = () => {
 
   const handleResend = async () => {
     if (!emailInFlow) {
-      toast.error('Email not found. Please start registration again.')
+      toast.error('Email not found. Please start forgot password again.')
+      router.replace(`/${locale}/forgot-password`)
       return
     }
 
     try {
-      await resendVerification({ email: emailInFlow }).unwrap()
+      await resendResetOtp({ email: emailInFlow }).unwrap()
       setSent(true)
       setSecondsLeft(RESEND_SECONDS)
       setOtp('')
-      dispatch(setEmailInFlow(emailInFlow))
       toast.success('Code resent to your email')
     } catch (error) {
-      toast.error(
-        getApiErrorMessage(error, 'Failed to resend verification code.'),
-      )
+      toast.error(getApiErrorMessage(error, 'Failed to resend reset code.'))
     }
   }
 
@@ -88,8 +94,8 @@ const VerifyEmail = () => {
       <div className="flex flex-1 min-h-dvh">
         <AuthShell
           backgroundImage="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=1600&fit=crop"
-          title="Verify your email."
-          description="Confirm your email address to activate your StackRead account."
+          title="Verify your identity."
+          description="Confirm the code we sent before choosing a new password."
         />
 
         <section className="w-full lg:w-1/2 lg:ml-[50%] min-h-dvh flex flex-col bg-white overflow-y-auto">
@@ -97,11 +103,13 @@ const VerifyEmail = () => {
             <div className="mx-auto w-full max-w-lg rounded-xl px-4 py-16 sm:px-6">
               <div className="mb-8 space-y-2">
                 <h1 className="text-2xl font-semibold sm:text-3xl">
-                  Verify Your Email
+                  Verify Reset Code
                 </h1>
                 <p className="text-slate-500">
-                  Enter the 6-digit code we sent to your email address to finish
-                  creating your account.
+                  Enter the 6-digit code sent to{' '}
+                  <span className="font-medium text-gray-900">
+                    {emailInFlow}
+                  </span>
                 </p>
               </div>
 
@@ -120,7 +128,7 @@ const VerifyEmail = () => {
                   disabled={isVerifying || otp.length !== 6}
                   className="h-12 w-full rounded-lg bg-teal-700 text-sm font-medium text-white transition-all duration-150 hover:bg-teal-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {isVerifying ? 'Verifying...' : 'Verify Email'}
+                  {isVerifying ? 'Verifying...' : 'Verify Code'}
                 </button>
 
                 <div className="mt-4 text-center text-sm text-gray-500">
@@ -143,7 +151,7 @@ const VerifyEmail = () => {
                 </div>
 
                 <p className="mt-4 text-center text-sm text-gray-500">
-                  Already have an account?{' '}
+                  Remember your password?{' '}
                   <Link
                     href={`/${locale}/login`}
                     className="font-medium text-teal-700 hover:underline"
@@ -153,7 +161,7 @@ const VerifyEmail = () => {
                 </p>
               </form>
             </div>
-          </div>{' '}
+          </div>
           <div className="px-6 pb-6 flex sm:flex-row flex-col-reverse items-center justify-between flex-wrap text-sm text-gray-500">
             <p>
               &copy; {new Date().getFullYear()} StackRead. All rights reserved.
@@ -187,4 +195,4 @@ const VerifyEmail = () => {
   )
 }
 
-export default VerifyEmail
+export default VerifyResetEmailPage
