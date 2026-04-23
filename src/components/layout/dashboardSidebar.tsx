@@ -92,6 +92,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
           <X className="size-4" />
         </button>
       </div>
+
       <nav className="flex flex-col gap-4 overflow-y-auto pr-1">
         {dashboardPageSections.map((section) => (
           <section key={section.id} className="space-y-1.5">

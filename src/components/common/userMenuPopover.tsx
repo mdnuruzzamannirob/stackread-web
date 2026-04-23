@@ -98,10 +98,10 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
       <PopoverTrigger>
         <button
           type="button"
-          className="inline-flex h-10 max-w-56 items-center gap-2 duration-150 rounded-lg border border-gray-200 bg-white px-2 text-left text-gray-500 transition hover:border-gray-300 hover:text-inherit"
+          className="inline-flex h-10 max-w-56 items-center gap-2 duration-150 rounded-lg border border-gray-200 bg-white px-1.5 text-left text-gray-500 transition hover:border-gray-300 hover:text-inherit"
           aria-label={t('open')}
         >
-          <span className="inline-flex size-7 items-center justify-center rounded-md bg-brand-600 text-xs font-semibold text-white">
+          <span className="inline-flex size-7 items-center justify-center rounded-sm bg-brand-600 text-xs font-semibold text-white">
             {initials}
           </span>
           <span className="hidden truncate text-sm font-medium md:block">

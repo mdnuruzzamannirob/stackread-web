@@ -58,8 +58,8 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
 
   return (
     <div className="fixed left-0 right-0 bg-white top-0 z-40 md:left-60">
-      <div className="flex w-full items-center justify-between gap-4 px-4 py-4 md:px-6">
-        <div className="flex items-start gap-3">
+      <div className="flex w-full items-center justify-between gap-4 px-4 py-3.75 md:px-6">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={toggleSidebar}
@@ -70,7 +70,7 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
           </button>
 
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-gray-900 md:text-2xl">
+            <h1 className="text-xl font-medium text-gray-900 md:text-2xl">
               {title}
             </h1>
           </div>
@@ -81,7 +81,7 @@ export function DashboardHeader({ locale }: DashboardHeaderProps) {
             className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 focus-within:border-gray-300 hover:border-gray-300 lg:flex"
             onSubmit={handleSearchSubmit}
           >
-            <Search className="size-5" />
+            <Search className="size-5 text-gray-500" />
 
             <input
               ref={searchInputRef}
