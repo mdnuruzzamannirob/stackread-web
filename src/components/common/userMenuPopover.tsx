@@ -9,6 +9,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -98,11 +99,21 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
       <PopoverTrigger>
         <button
           type="button"
-          className="inline-flex h-10 max-w-56 items-center gap-2 duration-150 rounded-lg border border-gray-200 bg-white px-1.5 text-left text-gray-500 transition hover:border-gray-300 hover:text-inherit"
+          className="inline-flex h-10 max-w-56 items-center gap-2 rounded-lg border border-gray-200 bg-white px-1.5 text-left text-gray-500 transition duration-150 hover:border-gray-300 hover:text-inherit"
           aria-label={t('open')}
         >
-          <span className="inline-flex size-7 items-center justify-center rounded-sm bg-brand-600 text-xs font-semibold text-white">
-            {initials}
+          <span className="inline-flex size-7 items-center justify-center overflow-hidden rounded-sm bg-teal-600 text-xs font-semibold text-white">
+            {user?.profilePicture ? (
+              <Image
+                src={user.profilePicture}
+                alt={fullName}
+                width={28}
+                height={28}
+                className="size-7 object-cover"
+              />
+            ) : (
+              initials
+            )}
           </span>
           <span className="hidden truncate text-sm font-medium md:block">
             {fullName}
@@ -111,15 +122,31 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
         </button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-72 p-0" align="end">
-        <div className="space-y-2 p-3">
-          <p className="truncate text-sm font-semibold text-gray-900">
-            {fullName}
-          </p>
-          <p className="truncate text-xs text-gray-500">{email}</p>
+      <PopoverContent className="w-60 p-0" align="end">
+        <div className="border-b border-gray-100 flex items-center gap-3 p-3">
+          <div className="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-teal-600  font-semibold text-white">
+            {user?.profilePicture ? (
+              <Image
+                src={user.profilePicture}
+                alt={fullName}
+                width={48}
+                height={48}
+                className="size-12 object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium">
+              {fullName}
+            </p>
+            <p className="truncate text-xs text-gray-500">{email}</p>
+          </div>
         </div>
 
-        <div className="border-t border-gray-200 p-2">
+        <div className="px-2">
           {menuLinks.map((link) => {
             const Icon = link.icon
 
@@ -127,7 +154,7 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-brand-100 hover:text-brand-700 last:mb-0"
+                className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-teal-100 hover:text-teal-600"
               >
                 <Icon className="size-4" />
                 <span>{link.label}</span>
@@ -136,12 +163,12 @@ export function DashboardUserMenu({ locale }: DashboardUserMenuProps) {
           })}
         </div>
 
-        <div className="border-t border-gray-200 p-2">
+        <div className="border-t border-gray-100 p-2">
           <button
             type="button"
             onClick={handleLogout}
             disabled={isLoading}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <LogOut className="size-4" />
             <span>{isLoading ? t('loggingOut') : t('logout')}</span>
