@@ -115,7 +115,7 @@ const SettingsSidebar = ({ locale }: { locale: string }) => {
             <Link
               key={item.href}
               href={itemPath}
-              className={`mb-2 flex items-center gap-2.5 rounded-lg px-3 py-3 text-sm font-semibold transition-colors last:mb-0 ${
+              className={`mb-2 flex items-center gap-2.5 rounded-lg px-3 py-3 text-sm font-medium transition-colors last:mb-0 ${
                 isActive
                   ? item.isDanger
                     ? 'bg-red-50 text-red-600'

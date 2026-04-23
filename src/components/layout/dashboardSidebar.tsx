@@ -128,7 +128,7 @@ export function DashboardSidebar({ locale }: DashboardSidebarProps) {
             onClick={closeSidebar}
             className="flex items-center w-full gap-3 rounded-lg px-3 py-2.5 pr-3 text-sm font-medium text-gray-500 duration-150 transition hover:bg-teal-100 hover:text-teal-600"
           >
-            <Settings className="size-4" /> <span>{translate('Settings')}</span>
+            <Settings className="size-4" /> <span>{t('items.settings')}</span>
           </Link>
           <Link
             href={`/${locale}/logout`}

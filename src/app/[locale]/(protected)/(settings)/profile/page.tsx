@@ -1,7 +1,8 @@
 'use client'
 
+import InputField from '@/components/InputField'
 import { Camera, ImagePlus, UploadCloud, UserRound } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '@/lib/api/error-message'
@@ -20,9 +21,9 @@ import {
   SettingsCard,
   SettingsPageHeader,
 } from '@/components/settings/SettingsShared'
+import { Home, Mail, Phone } from 'lucide-react'
 import Image from 'next/image'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_UPLOAD_IMAGE_BYTES = 512 * 1024
 const MAX_IMAGE_DIMENSION = 1024
 const ACCEPTED_IMAGE_MIME_TYPES = [
@@ -78,28 +79,22 @@ export default function ProfilePage() {
       lastName: user.lastName ?? '',
       email: user.email ?? '',
       phone: user.phone ?? '',
-      countryCode: user.countryCode ?? 'BD',
+      countryCode: (user.countryCode ?? 'BD').toUpperCase(),
       profilePicture: user.profilePicture ?? '',
       address: user.address ?? '',
     }
-
 
     setProfileState(nextState)
     setInitialProfileState(nextState)
   }, [meResponse?.data])
 
-  const selectedCountry = useMemo(() => {
-    return (
-      COUNTRY_OPTIONS.find(
-        (country) => country.code === profileState.countryCode,
-      ) ?? COUNTRY_OPTIONS[0]
-    )
-  }, [profileState.countryCode])
+  const isFormDisabled = isLoadingProfile || isUpdatingProfile
+  const isPhotoActionDisabled =
+    isLoadingProfile || isUpdatingProfile || isUpdatingPicture
 
   const hasChanges =
     profileState.firstName !== initialProfileState.firstName ||
     profileState.lastName !== initialProfileState.lastName ||
-    profileState.email !== initialProfileState.email ||
     profileState.phone !== initialProfileState.phone ||
     profileState.countryCode !== initialProfileState.countryCode ||
     profileState.address !== initialProfileState.address
@@ -122,11 +117,6 @@ export default function ProfilePage() {
       return
     }
 
-    if (!EMAIL_REGEX.test(profileState.email.trim())) {
-      toast.error('Please enter a valid email address.')
-      return
-    }
-
     if (profileState.phone.trim() && profileState.phone.trim().length < 6) {
       toast.error('Phone number must be at least 6 characters.')
       return
@@ -141,7 +131,6 @@ export default function ProfilePage() {
       await updateMe({
         firstName: profileState.firstName.trim(),
         lastName: profileState.lastName.trim() || undefined,
-        email: profileState.email.trim().toLowerCase(),
         phone: profileState.phone.trim() || undefined,
         countryCode: profileState.countryCode.trim().toUpperCase(),
         address: profileState.address.trim() || undefined,
@@ -342,7 +331,8 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleOpenPhotoDialog}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 transition hover:text-brand-800"
+                disabled={isPhotoActionDisabled}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 transition hover:text-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Camera className="size-3.5" />
                 Update Photo
@@ -351,99 +341,100 @@ export default function ProfilePage() {
 
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[1.8px] text-[#0a5b71]">
-                    First Name
-                  </span>
-                  <input
-                    value={profileState.firstName}
-                    onChange={(event) =>
-                      handleFieldChange('firstName', event.target.value)
-                    }
-                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
-                  />
-                </label>
+                <InputField
+                  icon={<UserRound size={17} />}
+                  type="text"
+                  name="firstName"
+                  label="First Name"
+                  required
+                  placeholder="John"
+                  value={profileState.firstName}
+                  onChange={(event) =>
+                    handleFieldChange('firstName', event.target.value)
+                  }
+                  disabled={isFormDisabled}
+                  autoComplete="given-name"
+                />
 
-                <label className="space-y-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[1.8px] text-[#0a5b71]">
-                    Last Name
-                  </span>
-                  <input
-                    value={profileState.lastName}
-                    onChange={(event) =>
-                      handleFieldChange('lastName', event.target.value)
-                    }
-                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
-                  />
-                </label>
+                <InputField
+                  icon={<UserRound size={17} />}
+                  type="text"
+                  name="lastName"
+                  label="Last Name"
+                  placeholder="Doe"
+                  value={profileState.lastName}
+                  onChange={(event) =>
+                    handleFieldChange('lastName', event.target.value)
+                  }
+                  disabled={isFormDisabled}
+                  autoComplete="family-name"
+                />
               </div>
 
-              <label className="block space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[1.8px] text-[#0a5b71]">
-                  Email Address
-                </span>
-                <input
-                  type="email"
-                  value={profileState.email}
-                  onChange={(event) =>
-                    handleFieldChange('email', event.target.value)
-                  }
-                  className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
-                />
-              </label>
-
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[1.8px] text-[#0a5b71]">
-                  Phone Number
-                </span>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3">
+              <InputField
+                icon={<Mail size={17} />}
+                type="email"
+                name="email"
+                label="Email Address"
+                placeholder="john@example.com"
+                value={profileState.email}
+                onChange={() => undefined}
+                disabled
+                autoComplete="email"
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">
+                    Country Code
+                  </label>
                   <select
                     value={profileState.countryCode || 'BD'}
                     onChange={(event) =>
                       handleFieldChange('countryCode', event.target.value)
                     }
-                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-3 text-sm text-gray-700 outline-none transition focus:border-[#0a5b71]"
+                    disabled={isFormDisabled}
+                    className="h-11 w-full rounded-lg border border-gray-200 mt-1 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition focus:border-teal-600 focus:bg-white focus:ring-[2.5px] focus:ring-teal-600/10 disabled:cursor-not-allowed disabled:bg-gray-100"
                   >
                     {COUNTRY_OPTIONS.map((country) => (
                       <option key={country.code} value={country.code}>
-                        {country.dial}
+                        {country.name} ({country.dial})
                       </option>
                     ))}
                   </select>
-
-                  <input
-                    value={profileState.phone}
-                    onChange={(event) =>
-                      handleFieldChange('phone', event.target.value)
-                    }
-                    placeholder="(555) 019-2834"
-                    className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
-                  />
                 </div>
-                <p className="text-xs text-gray-500">
-                  Selected country: {selectedCountry?.name}
-                </p>
-              </div>
-
-              <label className="block space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[1.8px] text-[#0a5b71]">
-                  Address
-                </span>
-                <input
-                  value={profileState.address}
+                <InputField
+                  icon={<Phone size={17} />}
+                  type="tel"
+                  name="phone"
+                  label="Phone Number"
+                  placeholder="+880 1XX-XXXXXXX"
+                  value={profileState.phone}
                   onChange={(event) =>
-                    handleFieldChange('address', event.target.value)
+                    handleFieldChange('phone', event.target.value)
                   }
-                  placeholder="Your full address"
-                  className="h-12 w-full rounded-md border border-gray-200 bg-[#edf1f3] px-4 text-gray-800 outline-none transition focus:border-[#0a5b71]"
+                  disabled={isFormDisabled}
+                  autoComplete="tel"
                 />
-              </label>
+              </div>
+              <InputField
+                icon={<Home size={17} />}
+                type="text"
+                name="address"
+                label="Address"
+                placeholder="123 Main Street"
+                value={profileState.address}
+                onChange={(event) =>
+                  handleFieldChange('address', event.target.value)
+                }
+                disabled={isFormDisabled}
+                autoComplete="street-address"
+              />
 
               <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => void handleSave()}
-                  disabled={!hasChanges || isUpdatingProfile}
+                  disabled={!hasChanges || isFormDisabled}
                   className="inline-flex min-w-40 items-center justify-center gap-2 rounded-md bg-[#066e7f] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#055f6d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isUpdatingProfile ? <BusyIcon /> : null}
@@ -506,6 +497,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isPhotoActionDisabled}
               className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
             >
               <ImagePlus className="size-3.5" />
